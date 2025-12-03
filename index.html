@@ -25,7 +25,7 @@
     <div id="loginBox" class="card">
       <h3>เข้าสู่ระบบ</h3>
 
-      <label class="field-label">ชื่อผู้ใช้ (เช่น SS1)</label>
+      <label class="field-label">ชื่อผู้ใช้</label>
       <input id="username" type="text" placeholder="เช่น SS1">
 
       <label class="field-label">รหัสผ่าน</label>
@@ -42,7 +42,6 @@
       </button>
 
       <p id="loginMsg" class="msg"></p>
-      <p id="hint">* ตัวอย่าง: ผู้ใช้ SS1 รหัสผ่าน 1 → เห็นเฉพาะข้อมูลผู้ป่วยที่ SS1 สร้าง</p>
     </div>
 
     <!-- หน้า Main (เลือกผู้ป่วย + Monitor + ปุ่มหน้าถัดไป) -->
@@ -172,7 +171,7 @@
     // ตั้งค่า Firebase Realtime DB (REST API)
     // ==========================
     const FIREBASE_URL  = "https://ankle-cpm-default-rtdb.asia-southeast1.firebasedatabase.app";
-    const FIREBASE_AUTH = null; // ถ้าใช้ token ให้ใส่ string เช่น "abcd1234TOKEN"
+    const FIREBASE_AUTH = null; // ถ้ามี token ให้ใส่ string เช่น "abcd1234TOKEN"
 
     function buildUrl(path) {
       let url = FIREBASE_URL + path;
@@ -307,6 +306,7 @@
       deletePatientBtn.style.display = "none";
       clearMonitor();
       clearHistoryTable();
+      loginMsg.textContent = "";
     }
 
     fullscreenBtn.addEventListener("click", () => {
@@ -336,13 +336,13 @@
         const res = await fetch(url);
         const existing = await res.json();
         if (existing) {
-          loginMsg.textContent = "มีผู้ใช้นี้อยู่แล้ว กรุณาเลือกชื่ออื่น";
+          loginMsg.textContent = "มีผู้ใช้นี้อยู่แล้ว กรุณาใช้ชื่ออื่น";
           loginMsg.style.color = "red";
           return;
         }
 
         const payload = {
-          password: p,              // ในระบบจริงควร hash นะครับ อันนี้เพื่อใช้งานง่าย
+          password: p,          // ระบบจริงควร hash รหัสผ่าน อันนี้เก็บตรง ๆ เพื่อความง่าย
           createdAt: Date.now()
         };
 
@@ -356,7 +356,7 @@
           throw new Error("HTTP " + resSet.status);
         }
 
-        loginMsg.textContent = "สมัครสมาชิกเสร็จแล้ว ลองกดเข้าสู่ระบบ";
+        loginMsg.textContent = "สมัครสมาชิกสำเร็จ สามารถเข้าสู่ระบบได้";
         loginMsg.style.color = "lightgreen";
       } catch (err) {
         console.error("registerUser error:", err);
@@ -379,7 +379,7 @@
         const res = await fetch(url);
         const data = await res.json();
         if (!data) {
-          loginMsg.textContent = "ไม่พบผู้ใช้ หรือรหัสผ่านไม่ถูกต้อง";
+          loginMsg.textContent = "ไม่พบผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
           loginMsg.style.color = "red";
           return;
         }
@@ -439,8 +439,7 @@
         Object.keys(data).forEach((pid) => {
           const p = data[pid];
           if (!p) return;
-          // แสดงเฉพาะผู้ป่วยที่ ownerId ตรงกับผู้ใช้ปัจจุบัน
-          if (p.ownerId !== currentUserId) return;
+          if (p.ownerId !== currentUserId) return; // เห็นเฉพาะของตัวเอง
 
           patientMap[pid] = p;
           const opt = document.createElement("option");
@@ -559,7 +558,7 @@
         const urlP = buildUrl("/patients/" + currentPatientId + ".json");
         await fetch(urlP, { method: "DELETE" });
 
-        // ลบประวัติจาก cpm_results ที่ patientId ตรงกัน
+        // ลบประวัติใน cpm_results ที่ patientId ตรงกัน
         const urlHist = buildUrl("/cpm_results.json");
         const resH = await fetch(urlHist);
         const histData = await resH.json();
