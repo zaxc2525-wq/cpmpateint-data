@@ -558,9 +558,10 @@
       const histData=await resH.json();
       if(histData){
         const tasks=[];
+        const pidStr = String(currentPatientId);
         for(const key in histData){
           const item=histData[key];
-          if(item && item.patientId===currentPatientId){
+          if(item && String(item.patientId)===pidStr){
             tasks.push(fetch(buildUrl("/cpm_results/"+key+".json"),{method:"DELETE"}));
           }
         }
@@ -611,109 +612,83 @@
 
   // ===== HISTORY =====
   async function loadHistoryForPatient(patientId) {
-  clearHistoryTable();
-  clearMonitor();
-  if (!patientId) return;
+    clearHistoryTable();
+    clearMonitor();
+    if (!patientId) return;
 
-  try {
-    const url = buildUrl("/cpm_results.json");
-    const res = await fetch(url);
-    const data = await res.json();
-    if (!data) return;
+    try {
+      const url = buildUrl("/cpm_results.json");
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data) return;
 
-    const pidStr = String(patientId);  // แปลงเป็น string ไว้เทียบ
-    const rows = [];
+      const pidStr = String(patientId);
+      const rows = [];
 
-    for (const key in data) {
-      const item = data[key];
-      if (!item) continue;
+      for (const key in data) {
+        const item = data[key];
+        if (!item) continue;
 
-      // patientId ที่มาจาก Firebase (อาจเป็น number หรือ string)
-      const recPid = (item.patientId !== undefined && item.patientId !== null)
-        ? String(item.patientId)
-        : "";
+        const recPid = (item.patientId !== undefined && item.patientId !== null)
+          ? String(item.patientId)
+          : "";
 
-      // เอาเฉพาะ record ที่ patientId ตรงกับคนไข้ที่เราเลือก
-      if (recPid !== pidStr) continue;
+        if (recPid !== pidStr) continue;
 
-      rows.push(item);
-    }
+        rows.push(item);
+      }
 
-    if (rows.length === 0) {
-      clearHistoryTable();
-      return;
-    }
+      if (rows.length === 0) {
+        clearHistoryTable();
+        return;
+      }
 
-    // เรียงล่าสุด → เก่าสุด
-    rows.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      rows.sort((a, b) => (b.ts || 0) - (a.ts || 0));
 
-    historyBody.innerHTML = "";
+      historyBody.innerHTML = "";
 
-    rows.forEach((r) => {
-      const tr = document.createElement("tr");
+      rows.forEach((r) => {
+        const tr = document.createElement("tr");
 
-      const tsDisp = r.ts ? formatTimeFromSeconds(r.ts) : "-";
-      const angleDisp =
-        r.angle1 != null && r.angle2 != null
-          ? `${r.angle1}° - ${r.angle2}°`
-          : "-";
-      const timeDisp =
-        r.workTimeSec != null
-          ? `${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})`
-          : "-";
-      const devDisp = r.device || r.deviceId || "ESP32-CPM";
-      const noteDisp = r.note || "";
+        const tsDisp = r.ts ? formatTimeFromSeconds(r.ts) : "-";
+        const angleDisp =
+          r.angle1 != null && r.angle2 != null
+            ? `${r.angle1}° - ${r.angle2}°`
+            : "-";
+        const timeDisp =
+          r.workTimeSec != null
+            ? `${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})`
+            : "-";
+        const devDisp = r.device || r.deviceId || "ESP32-CPM";
+        const noteDisp = r.note || "";
 
-      tr.innerHTML = `
-        <td>${tsDisp}</td>
-        <td>${angleDisp}</td>
-        <td>${timeDisp}</td>
-        <td>${devDisp}</td>
-        <td>${noteDisp}</td>
-      `;
-      historyBody.appendChild(tr);
-    });
-
-    // อัปเดตกล่อง Monitor จาก record ล่าสุด
-    const latest = rows[0];
-    stateEl.textContent = "FINISHED";
-    angleEl.textContent =
-      latest.angle1 != null && latest.angle2 != null
-        ? `${latest.angle1}° - ${latest.angle2}°`
-        : "-";
-    remEl.textContent =
-      latest.workTimeSec != null
-        ? `${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})`
-        : "-";
-    timeEl.textContent = latest.ts ? formatTimeFromSeconds(latest.ts) : "-";
-  } catch (err) {
-    console.error("loadHistoryForPatient error:", err);
-  }
-}
-
-      if(rows.length===0){ clearHistoryTable(); return; }
-      rows.sort((a,b)=>(b.ts||0)-(a.ts||0));
-      historyBody.innerHTML="";
-      rows.forEach(r=>{
-        const tr=document.createElement("tr");
-        const tsDisp=r.ts?formatTimeFromSeconds(r.ts):"-";
-        const angleDisp=(r.angle1!=null && r.angle2!=null)?`${r.angle1}° - ${r.angle2}°`:"-";
-        const timeDisp=(r.workTimeSec!=null)?`${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})`:"-";
-        const devDisp=r.device||r.deviceId||"ESP32-CPM";
-        const noteDisp=r.note||"";
-        tr.innerHTML=`<td>${tsDisp}</td><td>${angleDisp}</td><td>${timeDisp}</td><td>${devDisp}</td><td>${noteDisp}</td>`;
+        tr.innerHTML = `
+          <td>${tsDisp}</td>
+          <td>${angleDisp}</td>
+          <td>${timeDisp}</td>
+          <td>${devDisp}</td>
+          <td>${noteDisp}</td>
+        `;
         historyBody.appendChild(tr);
       });
-      const latest=rows[0];
-      stateEl.textContent="FINISHED";
-      angleEl.textContent=(latest.angle1!=null && latest.angle2!=null)?`${latest.angle1}° - ${latest.angle2}°`:"-";
-      remEl.textContent=(latest.workTimeSec!=null)?`${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})`:"-";
-      timeEl.textContent=latest.ts?formatTimeFromSeconds(latest.ts):"-";
-    }catch(err){
-      console.error("loadHistoryForPatient error:",err);
+
+      const latest = rows[0];
+      stateEl.textContent = "FINISHED";
+      angleEl.textContent =
+        latest.angle1 != null && latest.angle2 != null
+          ? `${latest.angle1}° - ${latest.angle2}°`
+          : "-";
+      remEl.textContent =
+        latest.workTimeSec != null
+          ? `${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})`
+          : "-";
+      timeEl.textContent = latest.ts ? formatTimeFromSeconds(latest.ts) : "-";
+    } catch (err) {
+      console.error("loadHistoryForPatient error:", err);
     }
   }
 
+  // ===== NAV HISTORY =====
   toHistoryBtn.addEventListener("click",()=>{
     historyPage.style.display="block";
     mainPage.style.display="none";
@@ -730,5 +705,3 @@
 </script>
 </body>
 </html>
-
-
