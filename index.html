@@ -4,10 +4,8 @@
   <meta charset="utf-8">
   <title>CPM Monitor</title>
 
-  <!-- ถ้า deploy ที่ https://USERNAME.github.io/cpm-monitor/
-       และเป็น repo ธรรมดา ให้ใช้ base href แบบนี้:
-       <base href="/cpm-monitor/">
-       ถ้าเป็น repo ชื่อ USERNAME.github.io (root domain) ให้ลบบรรทัดข้างบนออก -->
+  <!-- ใช้กับ repo ชื่อ cpmpateint-data บน GitHub Pages -->
+  <base href="/cpmpateint-data/">
 
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -217,11 +215,71 @@
     const backToLoginBtn   = document.getElementById("backToLoginBtn");
     const loginBox         = document.getElementById("loginBox");
 
-    // ให้โชว์ main + patient + monitor ไว้เลย (โหมดทดลอง)
-    mainPage.style.display   = "block";
-    monitorBox.style.display = "block";
-    mainNavRow.style.display = "block";
-    patientBox.style.display = "block";
+    // ปุ่ม login / logout / register / fullscreen
+    const loginBtn       = document.getElementById("loginBtn");
+    const registerBtn    = document.getElementById("registerBtn");
+    const logoutBtn      = document.getElementById("logoutBtn");
+    const loginMsg       = document.getElementById("loginMsg");
+    const fullscreenBtn  = document.getElementById("fullscreenBtn");
+    const emailInput     = document.getElementById("email");
+    const passwordInput  = document.getElementById("password");
+
+    // ---------- โหมดทดลอง: จัดการหน้า Login ----------
+    function showMainUI() {
+      loginBox.style.display   = "none";
+      mainPage.style.display   = "block";
+      patientBox.style.display = "block";
+      monitorBox.style.display = "block";
+      mainNavRow.style.display = "block";
+      logoutBtn.style.display  = "inline-block";
+      loginMsg.textContent     = "";
+    }
+
+    function showLoginUI() {
+      loginBox.style.display   = "block";
+      mainPage.style.display   = "none";
+      historyPage.style.display= "none";
+      logoutBtn.style.display  = "none";
+    }
+
+    loginBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      // โหมดทดลอง: ไม่เช็คจริง แค่ให้ใส่อะไรก็ได้
+      const email = emailInput.value.trim();
+      const pass  = passwordInput.value.trim();
+      if (!email || !pass) {
+        loginMsg.textContent = "กรุณากรอกอีเมลและรหัสผ่าน (ใส่อะไรก็ได้ในโหมดทดลอง)";
+        loginMsg.style.color = "yellow";
+        return;
+      }
+      showMainUI();
+    });
+
+    registerBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      loginMsg.textContent = "โหมดทดลอง: ปุ่มสมัครสมาชิกยังไม่เชื่อมต่อระบบจริง";
+      loginMsg.style.color = "lightgray";
+    });
+
+    logoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      emailInput.value    = "";
+      passwordInput.value = "";
+      showLoginUI();
+    });
+
+    fullscreenBtn.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.error("Error attempting fullscreen:", err);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // เริ่มต้นให้แสดงหน้า Login ก่อน
+    showLoginUI();
 
     // ---------- ตัวช่วยแปลงเวลา ----------
     function formatMMSS(sec) {
@@ -440,8 +498,9 @@
 
     // ---------- สลับหน้า Main <-> History ----------
     toHistoryBtn.addEventListener("click", () => {
-      mainPage.style.display   = "none";
+      mainPage.style.display    = "block";
       historyPage.style.display = "block";
+      mainPage.style.display    = "none";
     });
 
     backToMainBtn.addEventListener("click", () => {
@@ -451,8 +510,7 @@
 
     backToLoginBtn.addEventListener("click", () => {
       historyPage.style.display = "none";
-      mainPage.style.display    = "none";
-      loginBox.style.display    = "block";
+      showLoginUI();
     });
 
     // ---------- ดึง "session ล่าสุด" จาก cpm_results (ESP32 เขียน) ----------
