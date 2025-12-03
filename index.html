@@ -60,7 +60,7 @@
 
         <div id="patientInfo" class="patient-info" style="display:none;">
           <div><span class="label">ชื่อ-สกุล:</span> <span id="pName" class="value-sm">-</span></div>
-          <div><span class="label">HN/ID:</span> <span id="pHN" class="value-sm">-</span></div>
+          <div><span class="label">รหัสผู้ป่วย (4 หลัก):</span> <span id="pHN" class="value-sm">-</span></div>
           <div><span class="label">Device ID:</span> <span id="pDevice" class="pill-dev">-</span></div>
           <div><span class="label">หมายเหตุ:</span> <span id="pNote" class="value-sm">-</span></div>
         </div>
@@ -77,8 +77,8 @@
           <label class="field-label">ชื่อ-สกุล</label>
           <input id="newName" type="text" placeholder="เช่น นาย กายภาพ ตัวอย่าง">
 
-          <label class="field-label">HN / รหัสผู้ป่วย</label>
-          <input id="newHN" type="text" placeholder="เช่น HN123456">
+          <label class="field-label">รหัสผู้ป่วย (4 หลัก)</label>
+          <input id="newHN" type="text" maxlength="4" placeholder="เช่น 0123">
 
           <label class="field-label">Device ID ที่ใช้งาน (เช่น CPM01)</label>
           <input id="newDeviceId" type="text" placeholder="เช่น CPM01">
@@ -109,12 +109,12 @@
           </div>
 
           <div class="item-row">
-            <span class="label">องศาล่าสุด</span>
+            <span class="label">มุมใช้งานครั้งล่าสุด</span>
             <span class="value" id="angleText">-</span>
           </div>
 
           <div class="item-row">
-            <span class="label">เวลาที่เหลือ</span>
+            <span class="label">ระยะเวลา</span>
             <span class="value" id="remText">-</span>
           </div>
 
@@ -135,7 +135,7 @@
     <div id="historyPage" class="card history" style="display:none;">
       <div class="history-header">
         <h3>ประวัติการทำ CPM</h3>
-        <p class="history-sub">แสดงประวัติของผู้ป่วยที่เลือก</p>
+        <p class="history-sub">แสดงประวัติของผู้ป่วยที่เลือก (จาก Firebase)</p>
       </div>
 
       <table class="history-table">
@@ -162,52 +162,47 @@
     </div>
   </div>
 
-  <script type="module">
-    // ---------- import Firebase SDK ----------
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      onValue,
-      query,
-      orderByChild,
-      limitToLast,
-      push,
-      remove
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <script>
+    // ==========================
+    // ตั้งค่า Firebase Realtime DB (REST API)
+    // ==========================
+    const FIREBASE_URL  = "https://ankle-cpm-default-rtdb.asia-southeast1.firebasedatabase.app";
+    const FIREBASE_AUTH = null; // ถ้าใช้ token ให้ใส่สตริงแทน null เช่น "abcd1234TOKEN"
 
-    // ---------- config จาก Firebase ----------
-    const firebaseConfig = {
-      apiKey: "AIzaSyDlsFrBiG5WhH83pgDryQZ-y_cIKM-iTOk",
-      authDomain: "ankle-cpm.firebaseapp.com",
-      databaseURL: "https://ankle-cpm-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "ankle-cpm",
-      storageBucket: "ankle-cpm.firebasestorage.app",
-      messagingSenderId: "94427329958",
-      appId: "1:94427329958:web:4010ea52b85a6a2b17cb67"
-    };
+    function buildUrl(path) {
+      let url = FIREBASE_URL + path;
+      if (FIREBASE_AUTH) {
+        const sep = url.includes("?") ? "&" : "?";
+        url += sep + "auth=" + FIREBASE_AUTH;
+      }
+      return url;
+    }
 
-    // ---------- เริ่มต้น Firebase ----------
-    const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
+    // ==========================
+    // อ้างอิง element ในหน้า
+    // ==========================
+    const loginBox       = document.getElementById("loginBox");
+    const mainPage       = document.getElementById("mainPage");
+    const historyPage    = document.getElementById("historyPage");
+    const patientBox     = document.getElementById("patientBox");
+    const monitorBox     = document.getElementById("monitorBox");
+    const mainNavRow     = document.getElementById("mainNavRow");
 
-    // ---------- อ้างอิง element ในหน้าเว็บ ----------
-    const stateEl = document.getElementById("stateText"); // สถานะ
-    const angleEl = document.getElementById("angleText"); // องศา
-    const remEl   = document.getElementById("remText");   // เวลา
-    const timeEl  = document.getElementById("timeText");  // เวลาอัปเดต
+    const loginBtn       = document.getElementById("loginBtn");
+    const registerBtn    = document.getElementById("registerBtn");
+    const logoutBtn      = document.getElementById("logoutBtn");
+    const loginMsg       = document.getElementById("loginMsg");
+    const emailInput     = document.getElementById("email");
+    const passwordInput  = document.getElementById("password");
+    const fullscreenBtn  = document.getElementById("fullscreenBtn");
 
-    const mainPage     = document.getElementById("mainPage");
-    const monitorBox   = document.getElementById("monitorBox");
-    const mainNavRow   = document.getElementById("mainNavRow");
-    const patientBox   = document.getElementById("patientBox");
+    const patientSelect  = document.getElementById("patientSelect");
+    const patientInfo    = document.getElementById("patientInfo");
+    const pNameEl        = document.getElementById("pName");
+    const pHNEl          = document.getElementById("pHN");
+    const pDeviceEl      = document.getElementById("pDevice");
+    const pNoteEl        = document.getElementById("pNote");
 
-    const patientSelect       = document.getElementById("patientSelect");
-    const patientInfo         = document.getElementById("patientInfo");
-    const pNameEl             = document.getElementById("pName");
-    const pHNEl               = document.getElementById("pHN");
-    const pDeviceEl           = document.getElementById("pDevice");
-    const pNoteEl             = document.getElementById("pNote");
     const toggleNewPatientBtn = document.getElementById("toggleNewPatientBtn");
     const newPatientForm      = document.getElementById("newPatientForm");
     const newNameInput        = document.getElementById("newName");
@@ -217,26 +212,22 @@
     const savePatientBtn      = document.getElementById("savePatientBtn");
     const patientMsgEl        = document.getElementById("patientMsg");
 
-    const deletePatientBtn = document.getElementById("deletePatientBtn");
-    const deleteMsgEl      = document.getElementById("deleteMsg");
+    const deletePatientBtn    = document.getElementById("deletePatientBtn");
+    const deleteMsgEl         = document.getElementById("deleteMsg");
 
-    const historyPage      = document.getElementById("historyPage");
-    const historyBody      = document.getElementById("historyBody");
-    const toHistoryBtn     = document.getElementById("toHistoryBtn");
-    const backToMainBtn    = document.getElementById("backToMainBtn");
-    const backToLoginBtn   = document.getElementById("backToLoginBtn");
-    const loginBox         = document.getElementById("loginBox");
+    const stateEl  = document.getElementById("stateText");
+    const angleEl  = document.getElementById("angleText");
+    const remEl    = document.getElementById("remText");
+    const timeEl   = document.getElementById("timeText");
 
-    // ปุ่ม login / logout / register / fullscreen
-    const loginBtn       = document.getElementById("loginBtn");
-    const registerBtn    = document.getElementById("registerBtn");
-    const logoutBtn      = document.getElementById("logoutBtn");
-    const loginMsg       = document.getElementById("loginMsg");
-    const fullscreenBtn  = document.getElementById("fullscreenBtn");
-    const emailInput     = document.getElementById("email");
-    const passwordInput  = document.getElementById("password");
+    const historyBody   = document.getElementById("historyBody");
+    const toHistoryBtn  = document.getElementById("toHistoryBtn");
+    const backToMainBtn = document.getElementById("backToMainBtn");
+    const backToLoginBtn= document.getElementById("backToLoginBtn");
 
-    // ---------- โหมดทดลอง: จัดการหน้า Login ----------
+    // ==========================
+    // Login หน้าเว็บ (โหมดทดลอง)
+    // ==========================
     function showMainUI() {
       loginBox.style.display   = "none";
       mainPage.style.display   = "block";
@@ -268,7 +259,7 @@
 
     registerBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      loginMsg.textContent = "โหมดทดลอง: ปุ่มสมัครสมาชิกยังไม่เชื่อมต่อระบบจริง";
+      loginMsg.textContent = "โหมดทดลอง: ปุ่มสมัครสมาชิกยังไม่เชื่อมระบบจริง";
       loginMsg.style.color = "lightgray";
     });
 
@@ -289,17 +280,19 @@
       }
     });
 
-    // เริ่มต้นให้แสดงหน้า Login ก่อน
+    // เริ่มต้นที่หน้า Login
     showLoginUI();
 
-    // ---------- ตัวช่วยแปลงเวลา ----------
+    // ==========================
+    // ฟังก์ชันช่วย format เวลา
+    // ==========================
     function formatMMSS(sec) {
       sec = Math.max(0, sec | 0);
-      const m = Math.floor(sec / 60);
-      const s = sec % 60;
+      const m  = Math.floor(sec / 60);
+      const s  = sec % 60;
       const mm = (m < 10 ? "0" : "") + m;
       const ss = (s < 10 ? "0" : "") + s;
-      return mm + ":" + ss;
+      return `${mm}:${ss}`;
     }
 
     function formatTimeFromSeconds(tsSec) {
@@ -308,57 +301,50 @@
       const pad = (n) => n.toString().padStart(2, "0");
       const dd  = pad(d.getDate());
       const mm  = pad(d.getMonth() + 1);
-      const yy  = d.getFullYear() + 543; // แปลงเป็น พ.ศ.
+      const yy  = d.getFullYear() + 543; // พ.ศ.
       const hh  = pad(d.getHours());
       const mi  = pad(d.getMinutes());
       const ss  = pad(d.getSeconds());
       return `${dd}/${mm}/${yy} ${hh}:${mi}:${ss}`;
     }
 
-    // ---------- ตัวแปรผู้ป่วยในหน้าเว็บ ----------
-    const patientsRef = ref(db, "patients");
-    let patientMap = {};        // patientId -> data
+    // ==========================
+    // จัดการข้อมูลผู้ป่วย
+    // ==========================
+    let patientMap = {};       // id -> data
     let currentPatientId = null;
-    let currentPatient   = null;
 
-    // โหลดรายชื่อผู้ป่วยจาก Firebase
-    onValue(patientsRef, (snapshot) => {
-      patientMap = {};
-      while (patientSelect.options.length > 1) {
-        patientSelect.remove(1);
+    async function loadPatients() {
+      try {
+        const res = await fetch(buildUrl("/patients.json"));
+        const data = await res.json();
+
+        patientMap = {};
+        // ล้าง option เก่า (เหลือ placeholder ตัวแรก)
+        while (patientSelect.options.length > 1) {
+          patientSelect.remove(1);
+        }
+
+        if (!data) {
+          return;
+        }
+
+        Object.keys(data).forEach((id) => {
+          const p = data[id];
+          patientMap[id] = p;
+          const opt = document.createElement("option");
+          const name = p.name || "";
+          const lastname = p.lastname || "";
+          opt.value = id;
+          opt.textContent = `${name} ${lastname} (${id})`;
+          patientSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("loadPatients error:", err);
       }
+    }
 
-      if (!snapshot.exists()) {
-        deletePatientBtn.style.display = "none";
-        return;
-      }
-
-      snapshot.forEach((child) => {
-        const key  = child.key;
-        const data = child.val() || {};
-        patientMap[key] = data;
-
-        const opt = document.createElement("option");
-        const label = data.name
-          ? `${data.name} (${data.hn || "-"})`
-          : key;
-        opt.value = key;
-        opt.textContent = label;
-        patientSelect.appendChild(opt);
-      });
-
-      // ถ้าคนไข้ที่เลือกก่อนหน้าโดนลบไปแล้ว
-      if (currentPatientId && !patientMap[currentPatientId]) {
-        currentPatientId = null;
-        currentPatient   = null;
-        patientInfo.style.display = "none";
-        clearHistoryTable();
-        deletePatientBtn.style.display = "none";
-        patientSelect.value = "";
-      }
-    });
-
-    // สลับแสดง/ซ่อนฟอร์มผู้ป่วยใหม่
+    // แสดง/ซ่อนฟอร์มผู้ป่วยใหม่
     toggleNewPatientBtn.addEventListener("click", () => {
       if (newPatientForm.style.display === "none" || newPatientForm.style.display === "") {
         newPatientForm.style.display = "block";
@@ -367,33 +353,47 @@
       }
     });
 
-    // บันทึกผู้ป่วยใหม่
+    // บันทึกผู้ป่วยใหม่ (ใช้ newHN เป็นรหัส 4 หลัก)
     savePatientBtn.addEventListener("click", async () => {
       const name     = newNameInput.value.trim();
-      const hn       = newHNInput.value.trim();
+      const id       = newHNInput.value.trim();
       const deviceId = newDeviceInput.value.trim();
       const note     = newNoteInput.value.trim();
-
-      if (!name || !hn) {
-        patientMsgEl.textContent = "กรุณากรอก ชื่อ-สกุล และ HN ให้ครบ";
-        patientMsgEl.style.color = "red";
-        return;
-      }
 
       patientMsgEl.textContent = "";
       deleteMsgEl.textContent  = "";
 
+      if (!name) {
+        patientMsgEl.textContent = "กรุณากรอกชื่อ-สกุล";
+        patientMsgEl.style.color = "red";
+        return;
+      }
+      if (id.length !== 4 || !/^\d{4}$/.test(id)) {
+        patientMsgEl.textContent = "รหัสผู้ป่วยต้องเป็นตัวเลข 4 หลัก";
+        patientMsgEl.style.color = "red";
+        return;
+      }
+
       const payload = {
-        name,
-        hn,
+        patientId: id,
+        name: name,
+        lastname: "",       // ถ้าอยากแยกชื่อ-นามสกุล เพิ่ม input อีกช่องได้
         deviceId: deviceId || "",
         note: note || "",
         createdAt: Date.now()
       };
 
       try {
-        const newRef = push(patientsRef, payload);
-        const newId  = newRef.key;
+        const url = buildUrl("/patients/" + id + ".json");
+        const res = await fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+
+        patientMsgEl.textContent = "บันทึกข้อมูลผู้ป่วยเรียบร้อย";
+        patientMsgEl.style.color = "lightgreen";
 
         newNameInput.value   = "";
         newHNInput.value     = "";
@@ -401,58 +401,18 @@
         newNoteInput.value   = "";
         newPatientForm.style.display = "none";
 
-        patientSelect.value = newId;
-        currentPatientId    = newId;
-        currentPatient      = payload;
-
-        pNameEl.textContent   = payload.name;
-        pHNEl.textContent     = payload.hn;
-        pDeviceEl.textContent = payload.deviceId || "-";
-        pNoteEl.textContent   = payload.note || "-";
-        patientInfo.style.display = "block";
-        deletePatientBtn.style.display = "inline-block";
-
-        patientMsgEl.textContent = "บันทึกผู้ป่วยเรียบร้อย";
-        patientMsgEl.style.color = "green";
-
-        loadPatientHistory(currentPatientId);
+        // โหลดใหม่ + เลือกคนที่เพิ่งสร้าง
+        await loadPatients();
+        patientSelect.value = id;
+        onPatientSelected(id);
       } catch (err) {
-        console.error("Error saving patient:", err);
-        patientMsgEl.textContent = "เกิดข้อผิดพลาดในการบันทึก";
+        console.error("savePatient error:", err);
+        patientMsgEl.textContent = "บันทึกไม่สำเร็จ: " + err;
         patientMsgEl.style.color = "red";
       }
     });
 
-    // เมื่อเปลี่ยนผู้ป่วยที่เลือก
-    patientSelect.addEventListener("change", () => {
-      deleteMsgEl.textContent = "";
-      const id = patientSelect.value;
-      if (!id) {
-        currentPatientId = null;
-        currentPatient   = null;
-        patientInfo.style.display = "none";
-        clearHistoryTable();
-        deletePatientBtn.style.display = "none";
-        return;
-      }
-
-      const data = patientMap[id];
-      if (!data) return;
-
-      currentPatientId = id;
-      currentPatient   = data;
-
-      pNameEl.textContent   = data.name || "-";
-      pHNEl.textContent     = data.hn || "-";
-      pDeviceEl.textContent = data.deviceId || "-";
-      pNoteEl.textContent   = data.note || "-";
-      patientInfo.style.display = "block";
-      deletePatientBtn.style.display = "inline-block";
-
-      loadPatientHistory(currentPatientId);
-    });
-
-    // ---------- ฟังก์ชันลบผู้ป่วย ----------
+    // ลบผู้ป่วย + ประวัติที่ patientId ตรงกัน
     deletePatientBtn.addEventListener("click", async () => {
       deleteMsgEl.textContent = "";
       if (!currentPatientId) {
@@ -462,37 +422,82 @@
       }
 
       const ok = window.confirm(
-        "ยืนยันลบผู้ป่วยนี้พร้อมประวัติการทำ CPM ทั้งหมด?\n(ไม่สามารถกู้คืนได้)"
+        "ยืนยันลบผู้ป่วยนี้และประวัติทั้งหมดของรหัส " + currentPatientId + " ?"
       );
       if (!ok) return;
 
-      const pid = currentPatientId;
       try {
-        const pRef  = ref(db, `patients/${pid}`);
-        const sRef  = ref(db, `patient_sessions/${pid}`);
+        // ลบ /patients/{id}
+        const urlPatient = buildUrl("/patients/" + currentPatientId + ".json");
+        await fetch(urlPatient, { method: "DELETE" });
 
-        await Promise.all([
-          remove(pRef),
-          remove(sRef)
-        ]);
+        // ลบรายการใน cpm_results ที่ patientId ตรงกัน
+        const urlHist = buildUrl("/cpm_results.json");
+        const resHist = await fetch(urlHist);
+        const histData = await resHist.json();
 
-        deleteMsgEl.textContent = "ลบผู้ป่วยและประวัติเรียบร้อย";
+        if (histData) {
+          const deletes = [];
+          for (const key in histData) {
+            const item = histData[key];
+            if (item && item.patientId === currentPatientId) {
+              const delUrl = buildUrl("/cpm_results/" + key + ".json");
+              deletes.push(fetch(delUrl, { method: "DELETE" }));
+            }
+          }
+          await Promise.all(deletes);
+        }
+
+        deleteMsgEl.textContent = "ลบข้อมูลผู้ป่วยและประวัติเรียบร้อย";
         deleteMsgEl.style.color = "lightgreen";
 
         currentPatientId = null;
-        currentPatient   = null;
         patientInfo.style.display = "none";
         deletePatientBtn.style.display = "none";
         patientSelect.value = "";
         clearHistoryTable();
+        clearMonitor();
+        await loadPatients();
       } catch (err) {
-        console.error("Error deleting patient:", err);
-        deleteMsgEl.textContent = "เกิดข้อผิดพลาดในการลบผู้ป่วย";
+        console.error("deletePatient error:", err);
+        deleteMsgEl.textContent = "ลบไม่สำเร็จ: " + err;
         deleteMsgEl.style.color = "red";
       }
     });
 
-    // ---------- ประวัติผู้ป่วย ----------
+    // เมื่อเปลี่ยนผู้ป่วยใน select
+    patientSelect.addEventListener("change", () => {
+      const id = patientSelect.value;
+      onPatientSelected(id);
+    });
+
+    function onPatientSelected(id) {
+      deleteMsgEl.textContent = "";
+      if (!id || !patientMap[id]) {
+        currentPatientId = null;
+        patientInfo.style.display = "none";
+        deletePatientBtn.style.display = "none";
+        clearHistoryTable();
+        clearMonitor();
+        return;
+      }
+
+      currentPatientId = id;
+      const p = patientMap[id];
+
+      pNameEl.textContent    = (p.name || "") + (p.lastname ? " " + p.lastname : "");
+      pHNEl.textContent      = p.patientId || id;
+      pDeviceEl.textContent  = p.deviceId || "-";
+      pNoteEl.textContent    = p.note || "-";
+      patientInfo.style.display = "block";
+      deletePatientBtn.style.display = "inline-block";
+
+      loadHistoryForPatient(currentPatientId);
+    }
+
+    // ==========================
+    // ประวัติ CPM ของผู้ป่วย
+    // ==========================
     function clearHistoryTable() {
       historyBody.innerHTML = `
         <tr>
@@ -501,35 +506,44 @@
       `;
     }
 
-    function loadPatientHistory(patientId) {
-      if (!patientId) {
-        clearHistoryTable();
-        return;
-      }
+    function clearMonitor() {
+      stateEl.textContent = "-";
+      angleEl.textContent = "-";
+      remEl.textContent   = "-";
+      timeEl.textContent  = "-";
+    }
 
-      const histRef = ref(db, `patient_sessions/${patientId}`);
+    async function loadHistoryForPatient(patientId) {
+      clearHistoryTable();
+      clearMonitor();
+      if (!patientId) return;
 
-      onValue(histRef, (snapshot) => {
-        if (!snapshot.exists()) {
-          clearHistoryTable();
+      try {
+        const url = buildUrl("/cpm_results.json");
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data) {
           return;
         }
 
         const rows = [];
-        snapshot.forEach((child) => {
-          const val = child.val() || {};
-          rows.push(val);
-        });
+        for (const key in data) {
+          const item = data[key];
+          if (!item || item.patientId !== patientId) continue;
+          rows.push(item);
+        }
 
-        rows.sort((a, b) => {
-          const ta = a.loggedAt || (a.ts ? a.ts * 1000 : 0);
-          const tb = b.loggedAt || (b.ts ? b.ts * 1000 : 0);
-          return tb - ta;
-        });
+        if (rows.length === 0) {
+          clearHistoryTable();
+          return;
+        }
+
+        // เรียงจากใหม่ไปเก่า ตาม ts
+        rows.sort((a, b) => (b.ts || 0) - (a.ts || 0));
 
         historyBody.innerHTML = "";
-
-        for (const r of rows) {
+        rows.forEach((r) => {
           const tr = document.createElement("tr");
 
           const tsDisp = r.ts ? formatTimeFromSeconds(r.ts) : "-";
@@ -539,7 +553,7 @@
           const timeDisp  = (r.workTimeSec != null)
             ? `${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})`
             : "-";
-          const devDisp   = r.deviceId || r.device || "-";
+          const devDisp   = r.device || r.deviceId || "ESP32-CPM";
           const noteDisp  = r.note || "";
 
           tr.innerHTML = `
@@ -549,16 +563,31 @@
             <td>${devDisp}</td>
             <td>${noteDisp}</td>
           `;
-
           historyBody.appendChild(tr);
-        }
-      });
+        });
+
+        // เอา session ล่าสุดไปแสดงที่ Monitor
+        const latest = rows[0];
+        stateEl.textContent = "FINISHED";
+        angleEl.textContent = (latest.angle1 != null && latest.angle2 != null)
+          ? `${latest.angle1}° - ${latest.angle2}°`
+          : "-";
+        remEl.textContent   = (latest.workTimeSec != null)
+          ? `${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})`
+          : "-";
+        timeEl.textContent  = latest.ts ? formatTimeFromSeconds(latest.ts) : "-";
+
+      } catch (err) {
+        console.error("loadHistoryForPatient error:", err);
+      }
     }
 
-    // ---------- สลับหน้า Main <-> History ----------
+    // ==========================
+    // สลับหน้า Main <-> History
+    // ==========================
     toHistoryBtn.addEventListener("click", () => {
-      mainPage.style.display    = "none";
       historyPage.style.display = "block";
+      mainPage.style.display    = "none";
     });
 
     backToMainBtn.addEventListener("click", () => {
@@ -571,93 +600,11 @@
       showLoginUI();
     });
 
-    // ---------- ดึง "session ล่าสุด" จาก cpm_results (ESP32 เขียน) ----------
-    const resultsRef  = ref(db, "cpm_results");
-    const latestQuery = query(resultsRef, orderByChild("ts"), limitToLast(1));
-
-    let lastLoggedKey = null; // กัน log ซ้ำ
-
-    onValue(latestQuery, (snapshot) => {
-      if (!snapshot.exists()) {
-        stateEl.textContent = "-";
-        angleEl.textContent = "-";
-        remEl.textContent   = "-";
-        timeEl.textContent  = "-";
-        return;
-      }
-
-      let latest = null;
-      let latestKey = null;
-
-      snapshot.forEach((child) => {
-        latestKey = child.key;
-        latest    = child.val();
-      });
-
-      if (!latest) {
-        stateEl.textContent = "-";
-        angleEl.textContent = "-";
-        remEl.textContent   = "-";
-        timeEl.textContent  = "-";
-        return;
-      }
-
-      console.log("Latest CPM result:", latest);
-
-      const a1 = latest.angle1 ?? null;
-      const a2 = latest.angle2 ?? null;
-      const wt = latest.workTimeSec ?? null;
-      const ts = latest.ts ?? null;
-
-      // อัปเดตกล่อง Monitor
-      stateEl.textContent = "FINISHED";
-
-      if (a1 !== null && a2 !== null) {
-        angleEl.textContent = `${a1}° - ${a2}°`;
-      } else {
-        angleEl.textContent = "-";
-      }
-
-      if (wt !== null) {
-        remEl.textContent = `${wt} วินาที (${formatMMSS(wt)})`;
-      } else {
-        remEl.textContent = "-";
-      }
-
-      timeEl.textContent = formatTimeFromSeconds(ts);
-
-      // ---------- บันทึกเข้า "ประวัติของคนไข้ที่เลือก" ----------
-      if (!latestKey || latestKey === lastLoggedKey) {
-        return;
-      }
-      lastLoggedKey = latestKey;
-
-      if (!currentPatientId || !currentPatient) {
-        console.log("ไม่มีผู้ป่วยที่เลือกอยู่ในตอนนี้ จึงไม่บันทึก history");
-        return;
-      }
-
-      const sessionPayload = {
-        angle1:       a1,
-        angle2:       a2,
-        workTimeSec:  wt,
-        ts:           ts,
-        device:       latest.device || "ESP32-CPM",
-        loggedAt:     Date.now(),
-        patientName:  currentPatient.name || "",
-        hn:           currentPatient.hn || "",
-        deviceId:     currentPatient.deviceId || "",
-        note:         currentPatient.note || ""
-      };
-
-      const sessionRef = ref(db, `patient_sessions/${currentPatientId}`);
-      push(sessionRef, sessionPayload)
-        .then(() => {
-          console.log("Saved session history for patient:", currentPatientId);
-        })
-        .catch((err) => {
-          console.error("Error saving session history:", err);
-        });
+    // ==========================
+    // โหลดข้อมูลผู้ป่วยครั้งแรกเมื่อเปิดหน้า
+    // ==========================
+    document.addEventListener("DOMContentLoaded", () => {
+      loadPatients();
     });
   </script>
 </body>
