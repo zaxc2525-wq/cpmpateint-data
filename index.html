@@ -373,54 +373,57 @@
     // ==========================
     // USER: Register / Login
     // ==========================
-    async function registerUser(username, password) {
-      const u = username.trim();
-      const p = password.trim();
+    async function loginUser(username, password) {
+  const u = username.trim();
+  const p = password.trim();
 
-      if (!u || !p) {
-        registerMsg.textContent = "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
-        registerMsg.style.color = "yellow";
-        return;
-      }
+  if (!u || !p) {
+    loginMsg.textContent = "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
+    loginMsg.style.color = "yellow";
+    return;
+  }
 
-      try {
-        const url = buildUrl("/users/" + encodeURIComponent(u) + ".json");
-        const res = await fetch(url);
-        const existing = await res.json();
+  try {
+    const url = buildUrl("/users/" + encodeURIComponent(u) + ".json");
+    const res = await fetch(url);
 
-        if (existing) {
-          registerMsg.textContent = "มีผู้ใช้นี้อยู่แล้ว กรุณาใช้ชื่ออื่น";
-          registerMsg.style.color = "red";
-          return;
-        }
-
-        const payload = {
-          password: p, // ระบบจริงควร hash
-          createdAt: Date.now()
-        };
-
-        const putRes = await fetch(url, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        if (!putRes.ok) {
-          throw new Error("HTTP " + putRes.status);
-        }
-
-        registerMsg.textContent = "สมัครสมาชิกสำเร็จ กำลังกลับหน้าเข้าสู่ระบบ...";
-        registerMsg.style.color = "lightgreen";
-
-        setTimeout(() => {
-          showLoginUI();
-        }, 1500);
-      } catch (err) {
-        console.error("registerUser error:", err);
-        registerMsg.textContent = "สมัครสมาชิกไม่สำเร็จ: " + err;
-        registerMsg.style.color = "red";
-      }
+    if (!res.ok) {
+      loginMsg.textContent = "อ่านข้อมูลผู้ใช้ไม่ได้ (" + res.status + ")";
+      loginMsg.style.color = "red";
+      return;
     }
+
+    const data = await res.json();
+    console.log("login user data =", data);
+
+    // ไม่มี user ชื่อนี้เลย
+    if (!data || typeof data !== "object" || data.password === undefined) {
+      loginMsg.textContent = "ไม่พบชื่อผู้ใช้นี้";
+      loginMsg.style.color = "red";
+      return;
+    }
+
+    // password ไม่ตรง
+    if (data.password !== p) {
+      loginMsg.textContent = "รหัสผ่านไม่ถูกต้อง";
+      loginMsg.style.color = "red";
+      return;
+    }
+
+    // สำเร็จ
+    currentUserId = u;
+    currentUserLabel.textContent = u;
+    loginMsg.textContent = "";
+
+    showMainUI();
+    await loadPatientsForCurrentUser();
+  } catch (err) {
+    console.error("loginUser error:", err);
+    loginMsg.textContent = "เข้าสู่ระบบไม่สำเร็จ: " + err;
+    loginMsg.style.color = "red";
+  }
+}
+
 
 async function registerUser(username, password) {
   const u = username.trim();
@@ -808,4 +811,5 @@ async function registerUser(username, password) {
   </script>
 </body>
 </html>
+
 
