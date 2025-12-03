@@ -13,6 +13,7 @@
   <div class="bg-overlay"></div>
 
   <div id="appWrapper">
+    <!-- Logo ส่วนบน -->
     <div class="logo-block">
       <div class="logo-circle">CPM</div>
       <div class="logo-text">
@@ -21,7 +22,7 @@
       </div>
     </div>
 
-    <!-- กล่องล็อกอิน / สมัครสมาชิก -->
+    <!-- ========== หน้า LOGIN ========== -->
     <div id="loginBox" class="card">
       <h3>เข้าสู่ระบบ</h3>
 
@@ -33,8 +34,7 @@
 
       <div class="button-row">
         <button id="loginBtn" class="btn primary">เข้าสู่ระบบ</button>
-        <button id="registerBtn" class="btn ghost small">สมัครสมาชิก</button>
-        <button id="logoutBtn" class="btn danger small" style="display:none;">ออกจากระบบ</button>
+        <button id="goRegisterBtn" class="btn ghost small">สมัครสมาชิกใหม่</button>
       </div>
 
       <button id="fullscreenBtn" class="btn ghost small fs-btn">
@@ -44,11 +44,32 @@
       <p id="loginMsg" class="msg"></p>
     </div>
 
-    <!-- หน้า Main (เลือกผู้ป่วย + Monitor + ปุ่มหน้าถัดไป) -->
+    <!-- ========== หน้า REGISTER แยกต่างหาก ========== -->
+    <div id="registerBox" class="card" style="display:none;">
+      <h3>สมัครสมาชิก</h3>
+
+      <label class="field-label">ชื่อผู้ใช้</label>
+      <input id="regUsername" type="text" placeholder="กำหนดชื่อผู้ใช้ เช่น SS1">
+
+      <label class="field-label">รหัสผ่าน</label>
+      <input id="regPassword" type="password" placeholder="กำหนดรหัสผ่าน">
+
+      <div class="button-row">
+        <button id="registerSubmitBtn" class="btn primary">สมัครสมาชิก</button>
+        <button id="backToLoginBtn" class="btn ghost small">กลับไปหน้าเข้าสู่ระบบ</button>
+      </div>
+
+      <p id="registerMsg" class="msg"></p>
+    </div>
+
+    <!-- ========== MAIN PAGE (หลังล็อกอินแล้ว) ========== -->
     <div id="mainPage" style="display:none;">
       <!-- แถบผู้ใช้ปัจจุบัน -->
       <div class="card" id="userBox">
-        <span>เข้าสู่ระบบเป็น: <strong id="currentUserLabel">-</strong></span>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>เข้าสู่ระบบเป็น: <strong id="currentUserLabel">-</strong></span>
+          <button id="logoutBtn" class="btn danger small">ออกจากระบบ</button>
+        </div>
       </div>
 
       <!-- กล่องเลือกผู้ป่วย -->
@@ -129,13 +150,13 @@
         </div>
       </div>
 
-      <!-- ปุ่มไปหน้าถัดไป -->
+      <!-- ปุ่มไปหน้า History -->
       <div id="mainNavRow" class="nav-row" style="display:none;">
         <button id="toHistoryBtn" class="btn ghost small">หน้าถัดไป (ประวัติผู้ป่วย)</button>
       </div>
     </div>
 
-    <!-- หน้า History -->
+    <!-- ========== HISTORY PAGE ========== -->
     <div id="historyPage" class="card history" style="display:none;">
       <div class="history-header">
         <h3>ประวัติการทำ CPM</h3>
@@ -161,7 +182,7 @@
 
       <div class="nav-row">
         <button id="backToMainBtn" class="btn ghost small">ย้อนกลับหน้าหลัก</button>
-        <button id="backToLoginBtn" class="btn danger small">ย้อนกลับหน้าล็อกอิน</button>
+        <button id="backToLoginBtn" class="btn danger small">กลับไปหน้าเข้าสู่ระบบ</button>
       </div>
     </div>
   </div>
@@ -186,6 +207,7 @@
     // อ้างอิง element ในหน้า
     // ==========================
     const loginBox       = document.getElementById("loginBox");
+    const registerBox    = document.getElementById("registerBox");
     const mainPage       = document.getElementById("mainPage");
     const historyPage    = document.getElementById("historyPage");
     const patientBox     = document.getElementById("patientBox");
@@ -193,14 +215,23 @@
     const mainNavRow     = document.getElementById("mainNavRow");
     const currentUserLabel = document.getElementById("currentUserLabel");
 
-    const loginBtn       = document.getElementById("loginBtn");
-    const registerBtn    = document.getElementById("registerBtn");
-    const logoutBtn      = document.getElementById("logoutBtn");
-    const loginMsg       = document.getElementById("loginMsg");
+    // login elements
     const usernameInput  = document.getElementById("username");
     const passwordInput  = document.getElementById("password");
+    const loginBtn       = document.getElementById("loginBtn");
+    const goRegisterBtn  = document.getElementById("goRegisterBtn");
+    const loginMsg       = document.getElementById("loginMsg");
     const fullscreenBtn  = document.getElementById("fullscreenBtn");
 
+    // register elements
+    const regUsernameInput   = document.getElementById("regUsername");
+    const regPasswordInput   = document.getElementById("regPassword");
+    const registerSubmitBtn  = document.getElementById("registerSubmitBtn");
+    const registerMsg        = document.getElementById("registerMsg");
+    const backToLoginBtn     = document.getElementById("backToLoginBtn");
+
+    // main UI elements
+    const logoutBtn      = document.getElementById("logoutBtn");
     const patientSelect  = document.getElementById("patientSelect");
     const patientInfo    = document.getElementById("patientInfo");
     const pNameEl        = document.getElementById("pName");
@@ -228,7 +259,7 @@
     const historyBody   = document.getElementById("historyBody");
     const toHistoryBtn  = document.getElementById("toHistoryBtn");
     const backToMainBtn = document.getElementById("backToMainBtn");
-    const backToLoginBtn= document.getElementById("backToLoginBtn");
+    const backToLoginBtn2= document.getElementById("backToLoginBtn"); // same id
 
     // ==========================
     // ตัวแปรสถานะ
@@ -278,35 +309,45 @@
     }
 
     // ==========================
-    // แสดง UI
+    // การสลับหน้า
     // ==========================
-    function showMainUI() {
-      loginBox.style.display   = "none";
-      mainPage.style.display   = "block";
-      historyPage.style.display= "none";
-      patientBox.style.display = "block";
-      monitorBox.style.display = "block";
-      mainNavRow.style.display = "block";
-      logoutBtn.style.display  = "inline-block";
-      currentUserLabel.textContent = currentUserId || "-";
-      loginMsg.textContent     = "";
-    }
-
     function showLoginUI() {
-      loginBox.style.display   = "block";
-      mainPage.style.display   = "none";
-      historyPage.style.display= "none";
-      logoutBtn.style.display  = "none";
-      currentUserId            = null;
+      loginBox.style.display    = "block";
+      registerBox.style.display = "none";
+      mainPage.style.display    = "none";
+      historyPage.style.display = "none";
+      logoutBtn.style.display   = "none";
+      currentUserId             = null;
       currentUserLabel.textContent = "-";
-      patientMap               = {};
-      currentPatientId         = null;
-      patientSelect.innerHTML  = `<option value="">— เลือกผู้ป่วย —</option>`;
+      patientMap                = {};
+      currentPatientId          = null;
+      patientSelect.innerHTML   = `<option value="">— เลือกผู้ป่วย —</option>`;
       patientInfo.style.display = "none";
       deletePatientBtn.style.display = "none";
       clearMonitor();
       clearHistoryTable();
-      loginMsg.textContent = "";
+      loginMsg.textContent      = "";
+      registerMsg.textContent   = "";
+    }
+
+    function showRegisterUI() {
+      loginBox.style.display    = "none";
+      registerBox.style.display = "block";
+      mainPage.style.display    = "none";
+      historyPage.style.display = "none";
+      registerMsg.textContent   = "";
+    }
+
+    function showMainUI() {
+      loginBox.style.display    = "none";
+      registerBox.style.display = "none";
+      mainPage.style.display    = "block";
+      historyPage.style.display = "none";
+      patientBox.style.display  = "block";
+      monitorBox.style.display  = "block";
+      mainNavRow.style.display  = "block";
+      logoutBtn.style.display   = "inline-block";
+      currentUserLabel.textContent = currentUserId || "-";
     }
 
     fullscreenBtn.addEventListener("click", () => {
@@ -326,8 +367,8 @@
       const u = username.trim();
       const p = password.trim();
       if (!u || !p) {
-        loginMsg.textContent = "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
-        loginMsg.style.color = "yellow";
+        registerMsg.textContent = "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
+        registerMsg.style.color = "yellow";
         return;
       }
 
@@ -336,13 +377,13 @@
         const res = await fetch(url);
         const existing = await res.json();
         if (existing) {
-          loginMsg.textContent = "มีผู้ใช้นี้อยู่แล้ว กรุณาใช้ชื่ออื่น";
-          loginMsg.style.color = "red";
+          registerMsg.textContent = "มีผู้ใช้นี้อยู่แล้ว กรุณาใช้ชื่ออื่น";
+          registerMsg.style.color = "red";
           return;
         }
 
         const payload = {
-          password: p,          // ระบบจริงควร hash รหัสผ่าน อันนี้เก็บตรง ๆ เพื่อความง่าย
+          password: p,          // ระบบจริงควร hash รหัสผ่าน
           createdAt: Date.now()
         };
 
@@ -356,12 +397,16 @@
           throw new Error("HTTP " + resSet.status);
         }
 
-        loginMsg.textContent = "สมัครสมาชิกสำเร็จ สามารถเข้าสู่ระบบได้";
-        loginMsg.style.color = "lightgreen";
+        registerMsg.textContent = "สมัครสมาชิกสำเร็จ กำลังกลับไปหน้าเข้าสู่ระบบ...";
+        registerMsg.style.color = "lightgreen";
+
+        setTimeout(() => {
+          showLoginUI();
+        }, 1500);
       } catch (err) {
         console.error("registerUser error:", err);
-        loginMsg.textContent = "สมัครสมาชิกไม่สำเร็จ: " + err;
-        loginMsg.style.color = "red";
+        registerMsg.textContent = "สมัครสมาชิกไม่สำเร็จ: " + err;
+        registerMsg.style.color = "red";
       }
     }
 
@@ -378,18 +423,14 @@
         const url = buildUrl("/users/" + encodeURIComponent(u) + ".json");
         const res = await fetch(url);
         const data = await res.json();
-        if (!data) {
-          loginMsg.textContent = "ไม่พบผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
-          loginMsg.style.color = "red";
-          return;
-        }
-        if (data.password !== p) {
-          loginMsg.textContent = "รหัสผ่านไม่ถูกต้อง";
+        if (!data || data.password !== p) {
+          loginMsg.textContent = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
           loginMsg.style.color = "red";
           return;
         }
 
         currentUserId = u;
+        loginMsg.textContent = "";
         showMainUI();
         await loadPatientsForCurrentUser();
       } catch (err) {
@@ -399,21 +440,40 @@
       }
     }
 
+    function logout() {
+      usernameInput.value = "";
+      passwordInput.value = "";
+      showLoginUI();
+    }
+
     // ปุ่ม login / register / logout
     loginBtn.addEventListener("click", (e) => {
       e.preventDefault();
       loginUser(usernameInput.value, passwordInput.value);
     });
 
-    registerBtn.addEventListener("click", (e) => {
+    goRegisterBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      registerUser(usernameInput.value, passwordInput.value);
+      showRegisterUI();
+    });
+
+    registerSubmitBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      registerUser(regUsernameInput.value, regPasswordInput.value);
+    });
+
+    backToLoginBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      showLoginUI();
     });
 
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      usernameInput.value = "";
-      passwordInput.value = "";
+      logout();
+    });
+
+    backToLoginBtn2.addEventListener("click", (e) => {
+      e.preventDefault();
       showLoginUI();
     });
 
@@ -702,8 +762,7 @@
       mainPage.style.display    = "block";
     });
 
-    backToLoginBtn.addEventListener("click", () => {
-      historyPage.style.display = "none";
+    backToLoginBtn2.addEventListener("click", () => {
       showLoginUI();
     });
 
