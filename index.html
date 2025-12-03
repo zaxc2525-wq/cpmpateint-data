@@ -89,6 +89,14 @@
           <button id="savePatientBtn" class="btn primary small">บันทึกผู้ป่วย</button>
           <p id="patientMsg" class="msg"></p>
         </div>
+
+        <!-- ปุ่มลบผู้ป่วย -->
+        <div class="button-row" style="margin-top:8px;">
+          <button id="deletePatientBtn" class="btn danger small" style="display:none;">
+            ลบผู้ป่วยนี้ (พร้อมประวัติ)
+          </button>
+        </div>
+        <p id="deleteMsg" class="msg"></p>
       </div>
 
       <!-- กล่องแสดงสถานะ CPM -->
@@ -164,7 +172,8 @@
       query,
       orderByChild,
       limitToLast,
-      push
+      push,
+      remove
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     // ---------- config จาก Firebase ----------
@@ -208,6 +217,9 @@
     const savePatientBtn      = document.getElementById("savePatientBtn");
     const patientMsgEl        = document.getElementById("patientMsg");
 
+    const deletePatientBtn = document.getElementById("deletePatientBtn");
+    const deleteMsgEl      = document.getElementById("deleteMsg");
+
     const historyPage      = document.getElementById("historyPage");
     const historyBody      = document.getElementById("historyBody");
     const toHistoryBtn     = document.getElementById("toHistoryBtn");
@@ -244,7 +256,6 @@
 
     loginBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      // โหมดทดลอง: ไม่เช็คจริง แค่ให้ใส่อะไรก็ได้
       const email = emailInput.value.trim();
       const pass  = passwordInput.value.trim();
       if (!email || !pass) {
@@ -313,12 +324,12 @@
     // โหลดรายชื่อผู้ป่วยจาก Firebase
     onValue(patientsRef, (snapshot) => {
       patientMap = {};
-      // ล้าง options
       while (patientSelect.options.length > 1) {
         patientSelect.remove(1);
       }
 
       if (!snapshot.exists()) {
+        deletePatientBtn.style.display = "none";
         return;
       }
 
@@ -335,6 +346,16 @@
         opt.textContent = label;
         patientSelect.appendChild(opt);
       });
+
+      // ถ้าคนไข้ที่เลือกก่อนหน้าโดนลบไปแล้ว
+      if (currentPatientId && !patientMap[currentPatientId]) {
+        currentPatientId = null;
+        currentPatient   = null;
+        patientInfo.style.display = "none";
+        clearHistoryTable();
+        deletePatientBtn.style.display = "none";
+        patientSelect.value = "";
+      }
     });
 
     // สลับแสดง/ซ่อนฟอร์มผู้ป่วยใหม่
@@ -360,6 +381,7 @@
       }
 
       patientMsgEl.textContent = "";
+      deleteMsgEl.textContent  = "";
 
       const payload = {
         name,
@@ -373,15 +395,12 @@
         const newRef = push(patientsRef, payload);
         const newId  = newRef.key;
 
-        // เคลียร์ฟอร์ม
         newNameInput.value   = "";
         newHNInput.value     = "";
         newDeviceInput.value = "";
         newNoteInput.value   = "";
-
         newPatientForm.style.display = "none";
 
-        // เลือกคนไข้ที่เพิ่งเพิ่ม
         patientSelect.value = newId;
         currentPatientId    = newId;
         currentPatient      = payload;
@@ -391,11 +410,11 @@
         pDeviceEl.textContent = payload.deviceId || "-";
         pNoteEl.textContent   = payload.note || "-";
         patientInfo.style.display = "block";
+        deletePatientBtn.style.display = "inline-block";
 
         patientMsgEl.textContent = "บันทึกผู้ป่วยเรียบร้อย";
         patientMsgEl.style.color = "green";
 
-        // โหลดประวัติเฉพาะคนนี้
         loadPatientHistory(currentPatientId);
       } catch (err) {
         console.error("Error saving patient:", err);
@@ -406,13 +425,14 @@
 
     // เมื่อเปลี่ยนผู้ป่วยที่เลือก
     patientSelect.addEventListener("change", () => {
+      deleteMsgEl.textContent = "";
       const id = patientSelect.value;
       if (!id) {
         currentPatientId = null;
         currentPatient   = null;
         patientInfo.style.display = "none";
-        // ล้างตาราง history
         clearHistoryTable();
+        deletePatientBtn.style.display = "none";
         return;
       }
 
@@ -427,12 +447,52 @@
       pDeviceEl.textContent = data.deviceId || "-";
       pNoteEl.textContent   = data.note || "-";
       patientInfo.style.display = "block";
+      deletePatientBtn.style.display = "inline-block";
 
-      // โหลดประวัติของคนไข้คนนี้
       loadPatientHistory(currentPatientId);
     });
 
-    // ---------- ประวัติผู้ป่วย (patient_sessions/{patientId}/...) ----------
+    // ---------- ฟังก์ชันลบผู้ป่วย ----------
+    deletePatientBtn.addEventListener("click", async () => {
+      deleteMsgEl.textContent = "";
+      if (!currentPatientId) {
+        deleteMsgEl.textContent = "กรุณาเลือกผู้ป่วยก่อนลบ";
+        deleteMsgEl.style.color = "yellow";
+        return;
+      }
+
+      const ok = window.confirm(
+        "ยืนยันลบผู้ป่วยนี้พร้อมประวัติการทำ CPM ทั้งหมด?\n(ไม่สามารถกู้คืนได้)"
+      );
+      if (!ok) return;
+
+      const pid = currentPatientId;
+      try {
+        const pRef  = ref(db, `patients/${pid}`);
+        const sRef  = ref(db, `patient_sessions/${pid}`);
+
+        await Promise.all([
+          remove(pRef),
+          remove(sRef)
+        ]);
+
+        deleteMsgEl.textContent = "ลบผู้ป่วยและประวัติเรียบร้อย";
+        deleteMsgEl.style.color = "lightgreen";
+
+        currentPatientId = null;
+        currentPatient   = null;
+        patientInfo.style.display = "none";
+        deletePatientBtn.style.display = "none";
+        patientSelect.value = "";
+        clearHistoryTable();
+      } catch (err) {
+        console.error("Error deleting patient:", err);
+        deleteMsgEl.textContent = "เกิดข้อผิดพลาดในการลบผู้ป่วย";
+        deleteMsgEl.style.color = "red";
+      }
+    });
+
+    // ---------- ประวัติผู้ป่วย ----------
     function clearHistoryTable() {
       historyBody.innerHTML = `
         <tr>
@@ -461,7 +521,6 @@
           rows.push(val);
         });
 
-        // เรียงล่าสุดด้านบน โดยใช้ ts หรือ loggedAt
         rows.sort((a, b) => {
           const ta = a.loggedAt || (a.ts ? a.ts * 1000 : 0);
           const tb = b.loggedAt || (b.ts ? b.ts * 1000 : 0);
@@ -498,9 +557,8 @@
 
     // ---------- สลับหน้า Main <-> History ----------
     toHistoryBtn.addEventListener("click", () => {
-      mainPage.style.display    = "block";
-      historyPage.style.display = "block";
       mainPage.style.display    = "none";
+      historyPage.style.display = "block";
     });
 
     backToMainBtn.addEventListener("click", () => {
@@ -570,7 +628,6 @@
 
       // ---------- บันทึกเข้า "ประวัติของคนไข้ที่เลือก" ----------
       if (!latestKey || latestKey === lastLoggedKey) {
-        // onValue อาจเรียกซ้ำหลายรอบด้วยข้อมูลเดิม
         return;
       }
       lastLoggedKey = latestKey;
