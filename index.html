@@ -642,6 +642,7 @@
   </div>
 
   <!-- ========== MAIN PAGE ========== -->
+   <!-- ========== MAIN PAGE ========== -->
   <div id="mainPage" style="display:none;">
     <!-- แถบผู้ใช้ -->
     <div class="card" id="userBox">
@@ -651,84 +652,91 @@
       </div>
     </div>
 
-    <!-- ผู้ป่วย -->
-    <div id="patientBox" class="card" style="display:none;">
-      <h3>เลือกผู้ป่วย</h3>
+    <!-- layout-grid: แบ่ง 2 คอลัมน์บนจอกว้าง (ผู้ป่วย / สถานะเครื่อง) -->
+    <div class="layout-grid">
+      <!-- ผู้ป่วย -->
+      <div id="patientBox" class="card" style="display:none;">
+        <h3>เลือกผู้ป่วย</h3>
 
-      <div class="field-group">
-        <label class="field-label">ผู้ป่วย</label>
-        <select id="patientSelect">
-          <option value="">— เลือกผู้ป่วย —</option>
-        </select>
-      </div>
+        <div class="field-group">
+          <label class="field-label">ผู้ป่วย</label>
+          <select id="patientSelect">
+            <option value="">— เลือกผู้ป่วย —</option>
+          </select>
+        </div>
 
-      <div id="patientInfo" class="patient-info" style="display:none;">
-        <div><span class="label">ชื่อ-สกุล:</span> <span id="pName" class="value-sm">-</span></div>
-        <div><span class="label">รหัสผู้ป่วย (4 หลัก):</span> <span id="pHN" class="value-sm">-</span></div>
-        <div><span class="label">Device ID:</span> <span id="pDevice" class="pill-dev">-</span></div>
-        <div><span class="label">หมายเหตุ:</span> <span id="pNote" class="value-sm">-</span></div>
-      </div>
+        <div id="patientInfo" class="patient-info" style="display:none;">
+          <div><span class="label">ชื่อ-สกุล:</span> <span id="pName" class="value-sm">-</span></div>
+          <div><span class="label">รหัสผู้ป่วย (4 หลัก):</span> <span id="pHN" class="value-sm">-</span></div>
+          <div><span class="label">Device ID:</span> <span id="pDevice" class="pill-dev">-</span></div>
+          <div><span class="label">หมายเหตุ:</span> <span id="pNote" class="value-sm">-</span></div>
+        </div>
 
-      <hr class="divider">
+        <hr class="divider">
 
-      <button id="toggleNewPatientBtn" class="btn ghost small">
-        + สร้างข้อมูลผู้ป่วยใหม่
-      </button>
-
-      <div id="newPatientForm" class="new-patient" style="display:none;">
-        <h4>เพิ่มผู้ป่วยใหม่</h4>
-
-        <label class="field-label">ชื่อ-สกุล</label>
-        <input id="newName" type="text" placeholder="เช่น นาย กายภาพ ตัวอย่าง">
-
-        <label class="field-label">รหัสผู้ป่วย (4 หลัก)</label>
-        <input id="newHN" type="text" maxlength="4" placeholder="เช่น 0123">
-
-        <label class="field-label">Device ID ที่ใช้งาน (เช่น CPM01)</label>
-        <input id="newDeviceId" type="text" placeholder="เช่น CPM01">
-
-        <label class="field-label">หมายเหตุเพิ่มเติม</label>
-        <textarea id="newNote" rows="2" placeholder="เช่น ข้อเท้าขวา post-op 3 วัน"></textarea>
-
-        <button id="savePatientBtn" class="btn primary small">บันทึกผู้ป่วย</button>
-        <p id="patientMsg" class="msg"></p>
-      </div>
-
-      <div class="button-row" style="margin-top:8px;">
-        <button id="deletePatientBtn" class="btn danger small" style="display:none;">
-          ลบผู้ป่วยนี้ (พร้อมประวัติ)
+        <button id="toggleNewPatientBtn" class="btn ghost small">
+          + สร้างข้อมูลผู้ป่วยใหม่
         </button>
-      </div>
-      <p id="deleteMsg" class="msg"></p>
-    </div>
 
-    <!-- Monitor -->
-    <div id="monitorBox" class="card monitor" style="display:none;">
-      <h3>สถานะเครื่อง CPM</h3>
-      <div id="statusBox">
-        <div class="item-row">
-          <span class="label">สถานะ</span>
-          <span class="value-pill" id="stateText">-</span>
+        <div id="newPatientForm" class="new-patient" style="display:none;">
+          <h4>เพิ่มผู้ป่วยใหม่</h4>
+
+          <label class="field-label">ชื่อ-สกุล</label>
+          <input id="newName" type="text" placeholder="เช่น นาย กายภาพ ตัวอย่าง">
+
+          <label class="field-label">รหัสผู้ป่วย (4 หลัก)</label>
+          <input id="newHN" type="text" maxlength="4" placeholder="เช่น 0123">
+
+          <label class="field-label">Device ID ที่ใช้งาน (เช่น CPM01)</label>
+          <input id="newDeviceId" type="text" placeholder="เช่น CPM01">
+
+          <label class="field-label">หมายเหตุเพิ่มเติม</label>
+          <textarea id="newNote" rows="2" placeholder="เช่น ข้อเท้าขวา post-op 3 วัน"></textarea>
+
+          <button id="savePatientBtn" class="btn primary small">บันทึกผู้ป่วย</button>
+          <p id="patientMsg" class="msg"></p>
         </div>
-        <div class="item-row">
-          <span class="label">มุมใช้งานครั้งล่าสุด</span>
-          <span class="value" id="angleText">-</span>
+
+        <div class="button-row" style="margin-top:8px;">
+          <button id="deletePatientBtn" class="btn danger small" style="display:none;">
+            ลบผู้ป่วยนี้ (พร้อมประวัติ)
+          </button>
         </div>
-        <div class="item-row">
-          <span class="label">ระยะเวลา</span>
-          <span class="value" id="remText">-</span>
+        <p id="deleteMsg" class="msg"></p>
+      </div>
+
+      <!-- Monitor -->
+      <div id="monitorBox" class="card monitor" style="display:none;">
+        <h3>สถานะเครื่อง CPM</h3>
+        <div id="statusBox">
+          <div class="item-row">
+            <span class="label">สถานะ</span>
+            <span class="value-pill" id="stateText">-</span>
+          </div>
+          <div class="item-row">
+            <span class="label">มุมใช้งานครั้งล่าสุด</span>
+            <span class="value" id="angleText">-</span>
+          </div>
+          <div class="item-row">
+            <span class="label">ระยะเวลา</span>
+            <span class="value" id="remText">-</span>
+          </div>
+          <div class="item-row">
+            <span class="label">อัปเดตล่าสุด</span>
+            <span class="value time" id="timeText">-</span>
+          </div>
         </div>
-        <div class="item-row">
-          <span class="label">อัปเดตล่าสุด</span>
-          <span class="value time" id="timeText">-</span>
+
+        <!-- ปุ่มไปหน้าประวัติย้ายมาอยู่มุมล่างของ card ขวา -->
+        <div id="mainNavRow" class="nav-row" style="display:none;margin-top:12px;">
+          <button id="toHistoryBtn" class="btn ghost small" style="margin-left:auto;">
+            หน้าถัดไป (ประวัติผู้ป่วย)
+          </button>
         </div>
       </div>
-    </div>
-
-    <div id="mainNavRow" class="nav-row" style="display:none;">
-      <button id="toHistoryBtn" class="btn ghost small">หน้าถัดไป (ประวัติผู้ป่วย)</button>
     </div>
   </div>
+
 
   <!-- ========== HISTORY ========== -->
   <div id="historyPage" class="card history" style="display:none;">
@@ -1301,3 +1309,4 @@
 </script>
 </body>
 </html>
+
