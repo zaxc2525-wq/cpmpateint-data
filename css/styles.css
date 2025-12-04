@@ -1,5 +1,5 @@
 /* ================================
-   THEME (ใช้สีเดิมทั้งหมด)
+   THEME (ค่าพื้นฐาน = Dark เดิมของคุณ)
    ================================ */
 :root {
   --bg-gradient-start: #2c7cf7;
@@ -35,6 +35,62 @@
   --shadow-thin: 0 2px 10px rgba(15, 23, 42, 0.7);
 }
 
+/* ====== OVERRIDE ตัวแปรตามโหมด ====== */
+/* Dark = ใช้ค่าจาก :root เป็นหลัก */
+body[data-theme="dark"] {
+  --bg-gradient-start: #2c7cf7;
+  --bg-gradient-end: #111827;
+
+  --card-bg: rgba(15, 23, 42, 0.9);
+  --card-bg-soft: rgba(15, 23, 42, 0.78);
+}
+
+/* Light hospital */
+body[data-theme="light"] {
+  --bg-gradient-start: #e0f2ff;
+  --bg-gradient-end: #f8fbff;
+
+  --text-main: #111827;
+  --text-soft: #6b7280;
+  --text-muted: #9ca3af;
+  --text-strong: #0f172a;
+
+  --card-bg: #ffffff;
+  --card-bg-soft: #f9fafb;
+
+  --border-soft: rgba(148, 163, 184, 0.35);
+  --border-strong: rgba(148, 163, 184, 0.6);
+
+  --primary-light: #3b82f6;
+  --primary-main: #2563eb;
+
+  --shadow-strong: 0 18px 45px rgba(15, 23, 42, 0.16);
+  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+/* HIS modern */
+body[data-theme="his"] {
+  --bg-gradient-start: #0f172a;
+  --bg-gradient-end: #020617;
+
+  --text-main: #e5e7eb;
+  --text-soft: #9ca3af;
+  --text-muted: #64748b;
+  --text-strong: #f9fafb;
+
+  --card-bg: #020617;
+  --card-bg-soft: #020617;
+
+  --border-soft: rgba(51, 65, 85, 0.8);
+  --border-strong: rgba(51, 65, 85, 1);
+
+  --primary-light: #06b6d4;
+  --primary-main: #0ea5e9;
+
+  --shadow-strong: 0 22px 70px rgba(15, 23, 42, 0.85);
+  --shadow-soft: 0 12px 40px rgba(15, 23, 42, 0.7);
+}
+
 /* ================================
    GLOBAL
    ================================ */
@@ -55,7 +111,7 @@ body {
   justify-content: center;
 
   background: radial-gradient(circle at top left, var(--bg-gradient-start), var(--bg-gradient-end));
-  color: #111827;
+  color: var(--text-main);
   position: relative;
   overflow: hidden;
 }
@@ -91,23 +147,37 @@ body {
   left: -40px;
 }
 
+/* light ให้ overlay จางลง */
+body[data-theme="light"] .bg-overlay::before,
+body[data-theme="light"] .bg-overlay::after {
+  opacity: 0.15;
+  filter: blur(90px);
+}
+
+/* HIS ปรับสี overlay นิดหน่อย */
+body[data-theme="his"] .bg-overlay::before {
+  background: #0ea5e9;
+}
+body[data-theme="his"] .bg-overlay::after {
+  background: #22c55e;
+}
+
 /* ================================
    APP WRAPPER – ให้ฟีล dashboard
    ================================ */
 #appWrapper {
   position: relative;
   width: 100%;
-  max-width: 900px;        /* จากเดิม 440px → ดูเป็นระบบใหญ่ขึ้น */
+  max-width: 900px;
   padding: 22px 22px 26px;
   z-index: 1;
 
-  background: rgba(15, 23, 42, 0.94);
+  background: var(--card-bg);
   border-radius: 24px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
+  border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-soft);
 }
 
-/* ถ้าหน้าจอเล็กก็ให้แคบลงนิดหน่อย */
 @media (max-width: 720px) {
   #appWrapper {
     max-width: 460px;
@@ -116,13 +186,20 @@ body {
 }
 
 /* ================================
-   HEADER / LOGO BLOCK
+   HEADER / LOGO BLOCK + THEME SWITCH
    ================================ */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
 .logo-block {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 10px;
   color: var(--text-main);
 }
 
@@ -140,11 +217,7 @@ body {
   letter-spacing: 1px;
 }
 
-/* ถ้าอยากใช้โลโก้มหาลัยเป็นรูป ก็เปลี่ยนใน HTML:
-   <div class="logo-circle logo-img">
-     <img src="img/uni-logo.png" alt="ชื่อมหาวิทยาลัย">
-   </div>
-*/
+/* ใช้โลโก้รูปภาพ */
 .logo-circle.logo-img {
   padding: 4px;
 }
@@ -167,7 +240,57 @@ body {
   color: #cbd5f5;
 }
 
-/* เส้นหัวข้อเล็ก ๆ แบบโปรฯ */
+/* ========== THEME SWITCHER BUTTONS ========== */
+.theme-switcher {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  gap: 2px;
+}
+
+body[data-theme="light"] .theme-switcher {
+  background: #f1f5f9;
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+.theme-btn {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.06s ease;
+}
+
+.theme-btn span.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #6b7280;
+}
+
+.theme-btn.active {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary-main));
+  color: #f9fafb;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.55);
+  transform: translateY(-1px);
+}
+
+.theme-btn.active span.dot {
+  background: #f9fafb;
+}
+
+/* ================================
+   SECTION HEADER
+   ================================ */
 .section-header {
   display: flex;
   align-items: center;
@@ -187,7 +310,7 @@ body {
 }
 
 /* ================================
-   LAYOUT CARD – ให้ดูเป็น 2 คอลัมน์ (ถ้ามีหลาย card)
+   LAYOUT CARD – 2 คอลัมน์
    ================================ */
 .layout-grid {
   display: grid;
@@ -217,7 +340,6 @@ body {
   color: var(--text-main);
 }
 
-/* ใช้ได้กับ card login / monitor / history */
 .card h3 {
   margin: 0 0 10px 0;
   text-align: left;
@@ -272,6 +394,12 @@ textarea {
   transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
+body[data-theme="light"] input,
+body[data-theme="light"] select,
+body[data-theme="light"] textarea {
+  background: #f9fafb;
+}
+
 input::placeholder,
 textarea::placeholder {
   color: var(--text-muted);
@@ -283,6 +411,12 @@ textarea:focus {
   border-color: var(--primary-light);
   box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
   background: rgba(15, 23, 42, 0.92);
+}
+
+body[data-theme="light"] input:focus,
+body[data-theme="light"] select:focus,
+body[data-theme="light"] textarea:focus {
+  background: #ffffff;
 }
 
 textarea {
@@ -314,6 +448,11 @@ textarea {
     background 0.15s ease,
     color 0.15s ease,
     border-color 0.15s ease;
+}
+
+.btn.small {
+  padding: 6px 11px;
+  font-size: 12px;
 }
 
 /* ปุ่มหลัก */
@@ -350,12 +489,7 @@ textarea {
   background: rgba(248, 113, 113, 0.16);
 }
 
-.btn.small {
-  padding: 6px 11px;
-  font-size: 12px;
-}
-
-/* disabled state (เผื่อ JS ใช้) */
+/* disabled */
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -516,7 +650,7 @@ textarea {
 }
 
 /* ================================
-   KPI ROW (ถ้าอยากใช้ใน monitor)
+   KPI ROW (option)
    ================================ */
 .kpi-row {
   display: grid;
