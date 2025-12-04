@@ -20,7 +20,7 @@
 
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      /* เปลี่ยนจาก flex + overflow:hidden → layout ปกติที่เลื่อนลงได้ */
+      /* แก้จาก flex + overflow:hidden เป็น layout ปกติ */
       margin: 0;
       padding: 24px 0;
       min-height: 100vh;
@@ -62,12 +62,10 @@
       --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.45);
     }
 
-    /* ========= THEME: DARK ========= */
     body[data-theme="dark"] {
       --body-bg: radial-gradient(circle at top left, #2c7cf7, #111827);
     }
 
-    /* ========= THEME: LIGHT HOSPITAL ========= */
     body[data-theme="light"] {
       --body-bg: radial-gradient(circle at top left, #e0f2ff, #f8fbff);
 
@@ -95,7 +93,6 @@
       --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.18);
     }
 
-    /* ========= THEME: HIS MODERN ========= */
     body[data-theme="his"] {
       --body-bg: radial-gradient(circle at top left, #0f172a, #020617);
 
@@ -123,9 +120,6 @@
       --shadow-soft: 0 12px 40px rgba(15, 23, 42, 0.8);
     }
 
-    /* ================================
-       BLUR OVERLAY (พื้นหลัง)
-    ================================= */
     .bg-overlay {
       position: absolute;
       inset: 0;
@@ -171,19 +165,14 @@
       background: #22c55e;
     }
 
-    /* ================================
-       APP WRAPPER
-    ================================= */
     #appWrapper {
       width: 100%;
       max-width: 960px;
       padding: 22px 26px 26px;
       border-radius: var(--card-radius);
-
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       box-shadow: var(--shadow-main);
-
       color: var(--text-main);
       margin: 0 auto;
     }
@@ -195,9 +184,7 @@
       }
     }
 
-    /* ================================
-       TOP BAR + LOGO + THEME SWITCH
-    ================================= */
+    /* ===== TOP BAR + LOGO + THEME ===== */
     .top-bar {
       display: flex;
       align-items: center;
@@ -206,15 +193,13 @@
       margin-bottom: 12px;
     }
 
-    /* โลโก้สองมหาลัยด้านซ้าย */
     .logo-header {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
-
     .logo-header img {
-      height: 56px;      /* ปรับขนาดโลโก้รวม ๆ ตรงนี้ได้ */
+      height: 48px;   /* ปรับขนาดโลโก้ตรงนี้ได้ */
       width: auto;
       object-fit: contain;
     }
@@ -282,9 +267,6 @@
       background: #f9fafb;
     }
 
-    /* ================================
-       CARD & SECTION
-    ================================= */
     .card {
       background: var(--card-bg);
       border-radius: 18px;
@@ -307,9 +289,6 @@
       margin: 10px 0;
     }
 
-    /* ================================
-       FORM FIELDS
-    ================================= */
     .field-label {
       display: block;
       font-size: 13px;
@@ -353,9 +332,6 @@
       min-height: 60px;
     }
 
-    /* ================================
-       BUTTONS
-    ================================= */
     .button-row,
     .nav-row {
       margin-top: 8px;
@@ -430,9 +406,6 @@
       color: #fca5a5;
     }
 
-    /* ================================
-       PATIENT / MONITOR
-    ================================= */
     .patient-info {
       background: rgba(15, 23, 42, 0.75);
       border-radius: 12px;
@@ -504,9 +477,6 @@
       border: 1px solid rgba(22, 163, 74, 0.7);
     }
 
-    /* ================================
-       HISTORY TABLE
-    ================================= */
     .card.history {
       margin-top: 16px;
     }
@@ -554,16 +524,13 @@
       color: var(--text-soft);
     }
 
-    /* ================================
-       LAYOUT GRID (ผู้ป่วย / monitor)
-    ================================= */
+    /* grid ผู้ป่วย / monitor */
     .layout-grid {
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
       gap: 14px;
       margin-top: 14px;
     }
-
     @media (max-width: 768px) {
       .layout-grid {
         grid-template-columns: 1fr;
@@ -586,7 +553,7 @@
   <div class="top-bar">
     <div class="logo-header">
       <img src="logo-kmutnb.png" class="logo-kmutnb" alt="KMUTNB">
-      <img src="logo-nmu.png"    class="logo-nmu"   alt="NMU">
+      <img src="logo-nmu.png" class="logo-nmu" alt="NMU">
     </div>
 
     <div class="title-block">
@@ -649,7 +616,6 @@
 
   <!-- ========== MAIN PAGE ========== -->
   <div id="mainPage" style="display:none;">
-    <!-- แถบผู้ใช้ -->
     <div class="card" id="userBox">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span>เข้าสู่ระบบเป็น: <strong id="currentUserLabel">-</strong></span>
@@ -657,7 +623,6 @@
       </div>
     </div>
 
-    <!-- layout-grid: แบ่ง 2 คอลัมน์ -->
     <div class="layout-grid">
       <!-- ผู้ป่วย -->
       <div id="patientBox" class="card" style="display:none;">
@@ -732,7 +697,6 @@
           </div>
         </div>
 
-        <!-- ปุ่มไปหน้าประวัติ -->
         <div id="mainNavRow" class="nav-row" style="display:none;margin-top:12px;">
           <button id="toHistoryBtn" class="btn ghost small" style="margin-left:auto;">
             หน้าถัดไป (ประวัติผู้ป่วย)
@@ -772,8 +736,526 @@
 </div>
 
 <script>
-  /* โค้ด JS ของคุณ (เหมือนเดิม) วางต่อจากนี้ได้เลย */
-  // ... (ผมไม่แก้ส่วน JS เลยตามที่ส่งมา)
+  /* ===== JS เดิมของคุณทั้งหมด ผมคัดกลับมาให้แบบเดิมเลย ===== */
+
+  const FIREBASE_URL  = "https://ankle-cpm-default-rtdb.asia-southeast1.firebasedatabase.app";
+  const FIREBASE_AUTH = null;
+
+  function buildUrl(path) {
+    let url = FIREBASE_URL + path;
+    if (FIREBASE_AUTH) {
+      const sep = url.includes("?") ? "&" : "?";
+      url += sep + "auth=" + FIREBASE_AUTH;
+    }
+    return url;
+  }
+
+  const loginBox    = document.getElementById("loginBox");
+  const registerBox = document.getElementById("registerBox");
+  const mainPage    = document.getElementById("mainPage");
+  const historyPage = document.getElementById("historyPage");
+
+  const usernameInput = document.getElementById("username");
+  const passwordInput = document.getElementById("password");
+  const loginBtn      = document.getElementById("loginBtn");
+  const goRegisterBtn = document.getElementById("goRegisterBtn");
+  const loginMsg      = document.getElementById("loginMsg");
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
+
+  const regUsernameInput  = document.getElementById("regUsername");
+  const regPasswordInput  = document.getElementById("regPassword");
+  const registerSubmitBtn = document.getElementById("registerSubmitBtn");
+  const backToLoginBtn    = document.getElementById("backToLoginBtn");
+  const registerMsg       = document.getElementById("registerMsg");
+
+  const logoutBtn        = document.getElementById("logoutBtn");
+  const currentUserLabel = document.getElementById("currentUserLabel");
+
+  const patientBox    = document.getElementById("patientBox");
+  const monitorBox    = document.getElementById("monitorBox");
+  const mainNavRow    = document.getElementById("mainNavRow");
+  const patientSelect = document.getElementById("patientSelect");
+  const patientInfo   = document.getElementById("patientInfo");
+  const pNameEl       = document.getElementById("pName");
+  const pHNEl         = document.getElementById("pHN");
+  const pDeviceEl     = document.getElementById("pDevice");
+  const pNoteEl       = document.getElementById("pNote");
+
+  const toggleNewPatientBtn = document.getElementById("toggleNewPatientBtn");
+  const newPatientForm      = document.getElementById("newPatientForm");
+  const newNameInput        = document.getElementById("newName");
+  const newHNInput          = document.getElementById("newHN");
+  const newDeviceInput      = document.getElementById("newDeviceId");
+  const newNoteInput        = document.getElementById("newNote");
+  const savePatientBtn      = document.getElementById("savePatientBtn");
+  const patientMsgEl        = document.getElementById("patientMsg");
+  const deletePatientBtn    = document.getElementById("deletePatientBtn");
+  const deleteMsgEl         = document.getElementById("deleteMsg");
+
+  const stateEl  = document.getElementById("stateText");
+  const angleEl  = document.getElementById("angleText");
+  const remEl    = document.getElementById("remText");
+  const timeEl   = document.getElementById("timeText");
+
+  const historyBody               = document.getElementById("historyBody");
+  const toHistoryBtn              = document.getElementById("toHistoryBtn");
+  const backToMainBtn             = document.getElementById("backToMainBtn");
+  const backToLoginFromHistoryBtn = document.getElementById("backToLoginFromHistoryBtn");
+
+  let currentUserId    = null;
+  let patientMap       = {};
+  let currentPatientId = null;
+
+  function formatMMSS(sec) {
+    sec = Math.max(0, sec | 0);
+    const m  = Math.floor(sec / 60);
+    const s  = sec % 60;
+    const mm = (m < 10 ? "0" : "") + m;
+    const ss = (s < 10 ? "0" : "") + s;
+    return `${mm}:${ss}`;
+  }
+  function formatTimeFromSeconds(tsSec) {
+    if (!tsSec) return "-";
+    const d = new Date(tsSec * 1000);
+    const pad = (n)=>n.toString().padStart(2,"0");
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()+543} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  function clearMonitor(){
+    stateEl.textContent="-";
+    angleEl.textContent="-";
+    remEl.textContent="-";
+    timeEl.textContent="-";
+  }
+  function clearHistoryTable(){
+    historyBody.innerHTML = `<tr><td colspan="5" class="empty">ยังไม่มีข้อมูล</td></tr>`;
+  }
+
+  function showLoginUI(){
+    loginBox.style.display    = "block";
+    registerBox.style.display = "none";
+    mainPage.style.display    = "none";
+    historyPage.style.display = "none";
+    logoutBtn.style.display   = "none";
+
+    currentUserId = null;
+    currentUserLabel.textContent = "-";
+    patientMap       = {};
+    currentPatientId = null;
+    patientSelect.innerHTML = `<option value="">— เลือกผู้ป่วย —</option>`;
+    patientInfo.style.display = "none";
+    deletePatientBtn.style.display = "none";
+    clearMonitor();
+    clearHistoryTable();
+    loginMsg.textContent    = "";
+    registerMsg.textContent = "";
+  }
+  function showRegisterUI(){
+    loginBox.style.display    = "none";
+    registerBox.style.display = "block";
+    mainPage.style.display    = "none";
+    historyPage.style.display = "none";
+    registerMsg.textContent   = "";
+  }
+  function showMainUI(){
+    loginBox.style.display    = "none";
+    registerBox.style.display = "none";
+    mainPage.style.display    = "block";
+    historyPage.style.display = "none";
+    patientBox.style.display  = "block";
+    monitorBox.style.display  = "block";
+    mainNavRow.style.display  = "block";
+    logoutBtn.style.display   = "inline-flex";
+    currentUserLabel.textContent = currentUserId || "-";
+  }
+
+  fullscreenBtn.addEventListener("click",()=>{
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen().catch(console.error);
+    }else{
+      document.exitFullscreen();
+    }
+  });
+
+  async function registerUser(username,password){
+    const u = username.trim();
+    const p = password.trim();
+    if(!u || !p){
+      registerMsg.textContent="กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
+      registerMsg.style.color="yellow";
+      return;
+    }
+    try{
+      const url = buildUrl("/users/"+encodeURIComponent(u)+".json");
+      const res = await fetch(url);
+      if(!res.ok){
+        registerMsg.textContent="อ่านข้อมูลจาก Firebase ไม่ได้ ("+res.status+")";
+        registerMsg.style.color="red";
+        return;
+      }
+      const existing = await res.json();
+
+      if(existing && typeof existing==="object" && existing.password!==undefined){
+        registerMsg.textContent="มีผู้ใช้นี้อยู่แล้ว กรุณาใช้ชื่ออื่น";
+        registerMsg.style.color="red";
+        return;
+      }
+
+      const payload={password:p,createdAt:Date.now()};
+      const putRes = await fetch(url,{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
+      if(!putRes.ok) throw new Error("HTTP "+putRes.status);
+
+      registerMsg.textContent="สมัครสมาชิกสำเร็จ กำลังกลับหน้าเข้าสู่ระบบ...";
+      registerMsg.style.color="lightgreen";
+      setTimeout(showLoginUI,1500);
+    }catch(err){
+      registerMsg.textContent="สมัครสมาชิกไม่สำเร็จ: "+err;
+      registerMsg.style.color="red";
+    }
+  }
+
+  async function loginUser(username,password){
+    const u = username.trim();
+    const p = password.trim();
+    if(!u || !p){
+      loginMsg.textContent="กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
+      loginMsg.style.color="yellow";
+      return;
+    }
+    try{
+      const url = buildUrl("/users/"+encodeURIComponent(u)+".json");
+      const res = await fetch(url);
+      if(!res.ok){
+        loginMsg.textContent="อ่านข้อมูลผู้ใช้ไม่ได้ ("+res.status+")";
+        loginMsg.style.color="red";
+        return;
+      }
+      const data = await res.json();
+
+      if(!data || typeof data!=="object" || data.password===undefined){
+        loginMsg.textContent="ไม่พบชื่อผู้ใช้นี้";
+        loginMsg.style.color="red";
+        return;
+      }
+      if(data.password!==p){
+        loginMsg.textContent="รหัสผ่านไม่ถูกต้อง";
+        loginMsg.style.color="red";
+        return;
+      }
+
+      currentUserId = u;
+      currentUserLabel.textContent = u;
+      loginMsg.textContent = "";
+      showMainUI();
+      await loadPatientsForCurrentUser();
+    }catch(err){
+      loginMsg.textContent="เข้าสู่ระบบไม่สำเร็จ: "+err;
+      loginMsg.style.color="red";
+    }
+  }
+
+  function logout(){
+    usernameInput.value="";
+    passwordInput.value="";
+    showLoginUI();
+  }
+
+  loginBtn.addEventListener("click",e=>{
+    e.preventDefault();
+    loginUser(usernameInput.value,passwordInput.value);
+  });
+  goRegisterBtn.addEventListener("click",e=>{
+    e.preventDefault();
+    showRegisterUI();
+  });
+  registerSubmitBtn.addEventListener("click",e=>{
+    e.preventDefault();
+    registerUser(regUsernameInput.value,regPasswordInput.value);
+  });
+  backToLoginBtn.addEventListener("click",e=>{
+    e.preventDefault();
+    showLoginUI();
+  });
+  logoutBtn.addEventListener("click",e=>{
+    e.preventDefault();
+    logout();
+  });
+
+  async function loadPatientsForCurrentUser(){
+    patientMap={};
+    patientSelect.innerHTML=`<option value="">— เลือกผู้ป่วย —</option>`;
+    patientInfo.style.display="none";
+    deletePatientBtn.style.display="none";
+    clearHistoryTable();
+    clearMonitor();
+    if(!currentUserId) return;
+
+    try{
+      const url = buildUrl("/patients.json");
+      const res = await fetch(url);
+      const data = await res.json();
+      if(!data) return;
+      Object.keys(data).forEach(pid=>{
+        const p=data[pid];
+        if(!p) return;
+        if(p.ownerId!==currentUserId) return;
+        patientMap[pid]=p;
+        const opt=document.createElement("option");
+        const fullname=(p.name||"")+(p.lastname?(" "+p.lastname):"");
+        opt.value=pid;
+        opt.textContent=`${fullname} (${pid})`;
+        patientSelect.appendChild(opt);
+      });
+    }catch(err){
+      console.error("loadPatientsForCurrentUser error:",err);
+    }
+  }
+
+  toggleNewPatientBtn.addEventListener("click",()=>{
+    newPatientForm.style.display =
+      (newPatientForm.style.display==="block")?"none":"block";
+  });
+
+  savePatientBtn.addEventListener("click",async()=>{
+    patientMsgEl.textContent="";
+    deleteMsgEl.textContent="";
+    if(!currentUserId){
+      patientMsgEl.textContent="กรุณาเข้าสู่ระบบก่อน";
+      patientMsgEl.style.color="red";
+      return;
+    }
+    const name=newNameInput.value.trim();
+    const id=newHNInput.value.trim();
+    const deviceId=newDeviceInput.value.trim();
+    const note=newNoteInput.value.trim();
+
+    if(!name){
+      patientMsgEl.textContent="กรุณากรอกชื่อ-สกุล";
+      patientMsgEl.style.color="red"; return;
+    }
+    if(id.length!==4 || !/^\d{4}$/.test(id)){
+      patientMsgEl.textContent="รหัสผู้ป่วยต้องเป็นตัวเลข 4 หลัก (เช่น 0123)";
+      patientMsgEl.style.color="red"; return;
+    }
+    const payload={
+      patientId:id,
+      name,
+      lastname:"",
+      deviceId:deviceId||"",
+      note:note||"",
+      ownerId:currentUserId,
+      createdAt:Date.now()
+    };
+    try{
+      const url=buildUrl("/patients/"+id+".json");
+      const res=await fetch(url,{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      patientMsgEl.textContent="บันทึกข้อมูลผู้ป่วยเรียบร้อย";
+      patientMsgEl.style.color="lightgreen";
+
+      newNameInput.value="";
+      newHNInput.value="";
+      newDeviceInput.value="";
+      newNoteInput.value="";
+      newPatientForm.style.display="none";
+
+      await loadPatientsForCurrentUser();
+      patientSelect.value=id;
+      onPatientSelected(id);
+    }catch(err){
+      patientMsgEl.textContent="บันทึกไม่สำเร็จ: "+err;
+      patientMsgEl.style.color="red";
+    }
+  });
+
+  deletePatientBtn.addEventListener("click",async()=>{
+    deleteMsgEl.textContent="";
+    if(!currentUserId){
+      deleteMsgEl.textContent="กรุณาเข้าสู่ระบบก่อน";
+      deleteMsgEl.style.color="red"; return;
+    }
+    if(!currentPatientId || !patientMap[currentPatientId]){
+      deleteMsgEl.textContent="กรุณาเลือกผู้ป่วยก่อนลบ";
+      deleteMsgEl.style.color="yellow"; return;
+    }
+    const p=patientMap[currentPatientId];
+    if(p.ownerId!==currentUserId){
+      deleteMsgEl.textContent="คุณไม่มีสิทธิ์ลบผู้ป่วยคนนี้";
+      deleteMsgEl.style.color="red"; return;
+    }
+    const ok=window.confirm("ยืนยันลบผู้ป่วยรหัส "+currentPatientId+" และประวัติทั้งหมด?");
+    if(!ok) return;
+    try{
+      const urlP=buildUrl("/patients/"+currentPatientId+".json");
+      await fetch(urlP,{method:"DELETE"});
+
+      const urlHist=buildUrl("/cpm_results.json");
+      const resH=await fetch(urlHist);
+      const histData=await resH.json();
+      if(histData){
+        const tasks=[];
+        const pidStr = String(currentPatientId);
+        for(const key in histData){
+          const item=histData[key];
+          if(item && String(item.patientId)===pidStr){
+            tasks.push(fetch(buildUrl("/cpm_results/"+key+".json"),{method:"DELETE"}));
+          }
+        }
+        await Promise.all(tasks);
+      }
+
+      deleteMsgEl.textContent="ลบผู้ป่วยและประวัติเรียบร้อย";
+      deleteMsgEl.style.color="lightgreen";
+
+      currentPatientId=null;
+      patientInfo.style.display="none";
+      deletePatientBtn.style.display="none";
+      patientSelect.value="";
+      clearMonitor();
+      clearHistoryTable();
+      await loadPatientsForCurrentUser();
+    }catch(err){
+      deleteMsgEl.textContent="ลบไม่สำเร็จ: "+err;
+      deleteMsgEl.style.color="red";
+    }
+  });
+
+  patientSelect.addEventListener("change",()=>{
+    onPatientSelected(patientSelect.value);
+  });
+
+  function onPatientSelected(id){
+    deleteMsgEl.textContent="";
+    if(!id || !patientMap[id]){
+      currentPatientId=null;
+      patientInfo.style.display="none";
+      deletePatientBtn.style.display="none";
+      clearMonitor();
+      clearHistoryTable();
+      return;
+    }
+    currentPatientId=id;
+    const p=patientMap[id];
+    pNameEl.textContent=(p.name||"")+(p.lastname?(" "+p.lastname):"");
+    pHNEl.textContent=p.patientId||id;
+    pDeviceEl.textContent=p.deviceId||"-";
+    pNoteEl.textContent=p.note||"-";
+    patientInfo.style.display="block";
+    deletePatientBtn.style.display="inline-flex";
+    loadHistoryForPatient(currentPatientId);
+  }
+
+  async function loadHistoryForPatient(patientId) {
+    clearHistoryTable();
+    clearMonitor();
+    if (!patientId) return;
+
+    try {
+      const url = buildUrl("/cpm_results.json");
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data) return;
+
+      const pidStr = String(patientId);
+      const rows = [];
+
+      for (const key in data) {
+        const item = data[key];
+        if (!item) continue;
+
+        const recPid = (item.patientId !== undefined && item.patientId !== null)
+          ? String(item.patientId)
+          : "";
+
+        if (recPid !== pidStr) continue;
+
+        rows.push(item);
+      }
+
+      if (rows.length === 0) {
+        clearHistoryTable();
+        return;
+      }
+
+      rows.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+
+      historyBody.innerHTML = "";
+
+      rows.forEach((r) => {
+        const tr = document.createElement("tr");
+
+        const tsDisp = r.ts ? formatTimeFromSeconds(r.ts) : "-";
+        const angleDisp =
+          r.angle1 != null && r.angle2 != null
+            ? `${r.angle1}° - ${r.angle2}°`
+            : "-";
+        const timeDisp =
+          r.workTimeSec != null
+            ? `${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})`
+            : "-";
+        const devDisp = r.device || r.deviceId || "ESP32-CPM";
+        const noteDisp = r.note || "";
+
+        tr.innerHTML = `
+          <td>${tsDisp}</td>
+          <td>${angleDisp}</td>
+          <td>${timeDisp}</td>
+          <td>${devDisp}</td>
+          <td>${noteDisp}</td>
+        `;
+        historyBody.appendChild(tr);
+      });
+
+      const latest = rows[0];
+      stateEl.textContent = "FINISHED";
+      angleEl.textContent =
+        latest.angle1 != null && latest.angle2 != null
+          ? `${latest.angle1}° - ${latest.angle2}°`
+          : "-";
+      remEl.textContent =
+        latest.workTimeSec != null
+          ? `${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})`
+          : "-";
+      timeEl.textContent = latest.ts ? formatTimeFromSeconds(latest.ts) : "-";
+    } catch (err) {
+      console.error("loadHistoryForPatient error:", err);
+    }
+  }
+
+  toHistoryBtn.addEventListener("click",()=>{
+    historyPage.style.display="block";
+    mainPage.style.display="none";
+  });
+  backToMainBtn.addEventListener("click",()=>{
+    historyPage.style.display="none";
+    mainPage.style.display="block";
+  });
+  backToLoginFromHistoryBtn.addEventListener("click",()=>{
+    showLoginUI();
+  });
+
+  document.addEventListener("DOMContentLoaded",showLoginUI);
+
+  (function () {
+    const body   = document.body;
+    const btns   = document.querySelectorAll(".theme-btn");
+
+    btns.forEach((btn)=>{
+      btn.addEventListener("click",()=>{
+        const theme = btn.getAttribute("data-theme-target");
+        body.setAttribute("data-theme", theme || "dark");
+        btns.forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+  })();
 </script>
 </body>
 </html>
