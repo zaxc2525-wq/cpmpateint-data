@@ -712,6 +712,43 @@ textarea {
     padding: 12px 14px 12px;
   }
 }
+/* แถวโลโก้มหาวิทยาลัยด้านบน */
+.partner-logos {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+/* โลโก้หลัก (แบนยาว KMUTNB) */
+.partner-logos img.logo-main {
+  height: 34px;          /* ปรับสูงตามที่ชอบ */
+  object-fit: contain;
+}
+
+/* โลโก้รอง (ตั้ง NMU) */
+.partner-logos img.logo-sub {
+  height: 40px;          /* อันนี้ตั้งสูงกว่านิดหน่อย */
+  object-fit: contain;
+}
+
+/* จอเล็ก → โลโก้เรียงลงล่าง จะได้ไม่เบียดกัน */
+@media (max-width: 720px) {
+  .partner-logos {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .partner-logos img.logo-main {
+    height: 28px;
+  }
+
+  .partner-logos img.logo-sub {
+    height: 34px;
+  }
+}
+
 /* ===== บังคับให้หน้าเว็บสามารถเลื่อนแนวตั้งได้แน่นอน ===== */
 html,
 body {
