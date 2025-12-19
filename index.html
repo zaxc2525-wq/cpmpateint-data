@@ -472,6 +472,9 @@
 </div>
 
 <script>
+  // =========================
+  // Firebase config
+  // =========================
   const FIREBASE_URL  = "https://ankle-cpm-default-rtdb.asia-southeast1.firebasedatabase.app";
   const FIREBASE_AUTH = null;
 
@@ -484,12 +487,30 @@
     return url;
   }
 
-  // ===== Device owner session binding (สำคัญสำหรับ ESP) =====
+  // =========================
+  // Paths (Multi-user)
+  // =========================
   const DEFAULT_DEVICE_ID = "CPM01";
+
+  const PATHS = {
+    // accounts store (login/register) — แยกจาก users เพื่อไม่ชนกับ data structure
+    account: (u) => "/accounts/" + encodeURIComponent(u) + ".json",
+
+    // device binding (ESP polls this)
+    device: (deviceId) => "/devices/" + encodeURIComponent(deviceId) + ".json",
+
+    // user-scoped patients/results (รองรับ patientId ซ้ำได้)
+    userPatientsRoot: (ownerId) => "/users/" + encodeURIComponent(ownerId) + "/patients.json",
+    userPatient: (ownerId, pid) => "/users/" + encodeURIComponent(ownerId) + "/patients/" + encodeURIComponent(pid) + ".json",
+
+    userResultsByPatient: (ownerId, pid) => "/users/" + encodeURIComponent(ownerId) + "/cpm_results/" + encodeURIComponent(pid) + ".json"
+  };
+
+  // ===== Device owner session binding (สำคัญสำหรับ ESP) =====
   async function setDeviceOwnerForSession(deviceId, ownerId) {
     if (!deviceId || !ownerId) return;
     try {
-      const url = buildUrl("/devices/" + encodeURIComponent(deviceId) + ".json");
+      const url = buildUrl(PATHS.device(deviceId));
       await fetch(url, {
         method: "PATCH",
         headers: {"Content-Type":"application/json"},
@@ -504,6 +525,9 @@
     }
   }
 
+  // =========================
+  // DOM refs
+  // =========================
   const loginBox    = document.getElementById("loginBox");
   const registerBox = document.getElementById("registerBox");
   const mainPage    = document.getElementById("mainPage");
@@ -556,10 +580,16 @@
   const backToMainBtn             = document.getElementById("backToMainBtn");
   const backToLoginFromHistoryBtn = document.getElementById("backToLoginFromHistoryBtn");
 
+  // =========================
+  // State
+  // =========================
   let currentUserId    = null;
   let patientMap       = {};
   let currentPatientId = null;
 
+  // =========================
+  // Helpers
+  // =========================
   function formatMMSS(sec) {
     sec = Math.max(0, sec | 0);
     const m  = Math.floor(sec / 60);
@@ -568,12 +598,16 @@
     const ss = (s < 10 ? "0" : "") + s;
     return `${mm}:${ss}`;
   }
-  function formatTimeFromSeconds(tsSec) {
+
+  // รองรับหลายรูปแบบเวลา: (1) endTsUnix (2) ts (legacy)
+  function formatTimeFromAny(rec) {
+    const tsSec = (rec && (rec.endTsUnix || rec.ts)) ? (rec.endTsUnix || rec.ts) : null;
     if (!tsSec) return "-";
     const d = new Date(tsSec * 1000);
     const pad = (n)=>n.toString().padStart(2,"0");
     return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()+543} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
+
   function clearMonitor(){
     stateEl.textContent="-";
     angleEl.textContent="-";
@@ -630,6 +664,9 @@
     }
   });
 
+  // =========================
+  // Auth (simple) — now use /accounts not /users
+  // =========================
   async function registerUser(username,password){
     const u = username.trim();
     const p = password.trim();
@@ -639,7 +676,7 @@
       return;
     }
     try{
-      const url = buildUrl("/users/"+encodeURIComponent(u)+".json");
+      const url = buildUrl(PATHS.account(u));
       const res = await fetch(url);
       if(!res.ok){
         registerMsg.textContent="อ่านข้อมูลจาก Firebase ไม่ได้ ("+res.status+")";
@@ -680,7 +717,7 @@
       return;
     }
     try{
-      const url = buildUrl("/users/"+encodeURIComponent(u)+".json");
+      const url = buildUrl(PATHS.account(u));
       const res = await fetch(url);
       if(!res.ok){
         loginMsg.textContent="อ่านข้อมูลผู้ใช้ไม่ได้ ("+res.status+")";
@@ -705,7 +742,7 @@
       loginMsg.textContent = "";
       showMainUI();
 
-      // ผูก owner ของ device ให้ session นี้ (กันล็อก USER1)
+      // ผูก owner ของ device ให้ session นี้ (ESP จะ poll ownerId จาก /devices/CPM01)
       await setDeviceOwnerForSession(DEFAULT_DEVICE_ID, currentUserId);
 
       await loadPatientsForCurrentUser();
@@ -727,6 +764,9 @@
   backToLoginBtn.addEventListener("click",e=>{ e.preventDefault(); showLoginUI(); });
   logoutBtn.addEventListener("click",e=>{ e.preventDefault(); logout(); });
 
+  // =========================
+  // Patients (Multi-user): /users/{ownerId}/patients
+  // =========================
   async function loadPatientsForCurrentUser(){
     patientMap={};
     patientSelect.innerHTML=`<option value="">— เลือกผู้ป่วย —</option>`;
@@ -737,19 +777,17 @@
     if(!currentUserId) return;
 
     try{
-      const url = buildUrl("/patients.json");
+      const url = buildUrl(PATHS.userPatientsRoot(currentUserId));
       const res = await fetch(url);
+      if(!res.ok) return;
       const data = await res.json();
       if(!data) return;
 
       Object.keys(data).forEach(pid=>{
         const p=data[pid];
         if(!p) return;
-
-        // กรองผู้ป่วยเฉพาะ ownerId ที่ล็อกอิน
-        if(String(p.ownerId||"") !== String(currentUserId)) return;
-
         patientMap[pid]=p;
+
         const opt=document.createElement("option");
         const fullname=(p.name||"")+(p.lastname?(" "+p.lastname):"");
         opt.value=pid;
@@ -799,7 +837,7 @@
     };
 
     try{
-      const url=buildUrl("/patients/"+id+".json");
+      const url=buildUrl(PATHS.userPatient(currentUserId, id));
       const res=await fetch(url,{
         method:"PUT",
         headers:{"Content-Type":"application/json"},
@@ -836,43 +874,17 @@
       deleteMsgEl.style.color="yellow"; return;
     }
 
-    const p=patientMap[currentPatientId];
-    if(String(p.ownerId||"") !== String(currentUserId)){
-      deleteMsgEl.textContent="คุณไม่มีสิทธิ์ลบผู้ป่วยคนนี้";
-      deleteMsgEl.style.color="red"; return;
-    }
-
-    const ok=window.confirm("ยืนยันลบผู้ป่วยรหัส "+currentPatientId+" และประวัติทั้งหมด?");
+    const ok=window.confirm("ยืนยันลบผู้ป่วยรหัส "+currentPatientId+" และประวัติทั้งหมดของบัญชีนี้?");
     if(!ok) return;
 
     try{
-      // ลบผู้ป่วย
-      const urlP=buildUrl("/patients/"+currentPatientId+".json");
+      // ลบผู้ป่วย (เฉพาะ user ปัจจุบัน)
+      const urlP = buildUrl(PATHS.userPatient(currentUserId, currentPatientId));
       await fetch(urlP,{method:"DELETE"});
 
-      // ลบเฉพาะประวัติของผู้ป่วย "และต้องเป็น ownerId ของ user ปัจจุบันเท่านั้น"
-      const urlHist=buildUrl("/cpm_results.json");
-      const resH=await fetch(urlHist);
-      const histData=await resH.json();
-
-      if(histData){
-        const tasks=[];
-        const pidStr = String(currentPatientId);
-        const ownerStr = String(currentUserId);
-
-        for(const key in histData){
-          const item=histData[key];
-          if(!item) continue;
-
-          if(String(item.patientId||"") !== pidStr) continue;
-
-          const recOwner = String(item.ownerId||"");
-          if(recOwner && recOwner !== ownerStr) continue; // กันลบข้าม user
-
-          tasks.push(fetch(buildUrl("/cpm_results/"+key+".json"),{method:"DELETE"}));
-        }
-        await Promise.all(tasks);
-      }
+      // ลบประวัติของผู้ป่วยคนนี้ (เฉพาะ user ปัจจุบัน)
+      const urlHist = buildUrl(PATHS.userResultsByPatient(currentUserId, currentPatientId));
+      await fetch(urlHist,{method:"DELETE"});
 
       deleteMsgEl.textContent="ลบผู้ป่วยและประวัติเรียบร้อย";
       deleteMsgEl.style.color="lightgreen";
@@ -913,32 +925,26 @@
     loadHistoryForPatient(currentPatientId);
   }
 
+  // =========================
+  // History (Multi-user): /users/{ownerId}/cpm_results/{patientId}
+  // =========================
   async function loadHistoryForPatient(patientId) {
     clearHistoryTable();
     clearMonitor();
-    if (!patientId) return;
+    if (!patientId || !currentUserId) return;
 
     try {
-      const url = buildUrl("/cpm_results.json");
+      const url = buildUrl(PATHS.userResultsByPatient(currentUserId, patientId));
       const res = await fetch(url);
+      if(!res.ok) return;
       const data = await res.json();
       if (!data) return;
 
-      const pidStr = String(patientId);
-      const ownerStr = String(currentUserId || "");
+      // data = { pushKey: record, ... }
       const rows = [];
-
       for (const key in data) {
         const item = data[key];
         if (!item) continue;
-
-        if (String(item.patientId||"") !== pidStr) continue;
-
-        // กรอง ownerId กันข้าม user
-        // (ถ้า record เก่าไม่มี ownerId -> จะไม่ตัด เพื่อไม่ให้หาย แต่แนะนำให้ ESP ใส่ ownerId ให้ครบ)
-        const recOwner = String(item.ownerId||"");
-        if (recOwner && ownerStr && recOwner !== ownerStr) continue;
-
         rows.push(item);
       }
 
@@ -947,14 +953,15 @@
         return;
       }
 
-      rows.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      // sort by endTsUnix (new) then ts (legacy)
+      rows.sort((a,b)=> ((b.endTsUnix||b.ts||0) - (a.endTsUnix||a.ts||0)));
 
       historyBody.innerHTML = "";
 
       rows.forEach((r) => {
         const tr = document.createElement("tr");
 
-        const tsDisp = r.ts ? formatTimeFromSeconds(r.ts) : "-";
+        const tsDisp = formatTimeFromAny(r);
         const angleDisp =
           r.angle1 != null && r.angle2 != null
             ? `${r.angle1}° - ${r.angle2}°`
@@ -963,7 +970,7 @@
           r.workTimeSec != null
             ? `${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})`
             : "-";
-        const devDisp = r.device || r.deviceId || "ESP32-CPM";
+        const devDisp = r.deviceId || r.device || "CPM";
         const noteDisp = r.note || "";
 
         tr.innerHTML = `
@@ -986,12 +993,13 @@
         latest.workTimeSec != null
           ? `${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})`
           : "-";
-      timeEl.textContent = latest.ts ? formatTimeFromSeconds(latest.ts) : "-";
+      timeEl.textContent = formatTimeFromAny(latest);
     } catch (err) {
       console.error("loadHistoryForPatient error:", err);
     }
   }
 
+  // NAV
   toHistoryBtn.addEventListener("click",()=>{
     historyPage.style.display="block";
     mainPage.style.display="none";
@@ -1006,6 +1014,7 @@
 
   document.addEventListener("DOMContentLoaded",showLoginUI);
 
+  // THEMES
   (function () {
     const body   = document.body;
     const btns   = document.querySelectorAll(".theme-btn");
