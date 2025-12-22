@@ -8,19 +8,11 @@
     /* ================================
        BASE + THEME VARIABLES
     ================================= */
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-
-    body {
+    body{
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      /* แก้จาก flex + overflow:hidden เป็น layout ปกติ */
       margin: 0;
       padding: 24px 0;
       min-height: 100vh;
@@ -32,8 +24,7 @@
       overflow-y: auto;
     }
 
-    /* ค่า default (dark) */
-    body {
+    body{
       --body-bg: radial-gradient(circle at top left, #2c7cf7, #111827);
 
       --card-bg: rgba(15, 23, 42, 0.9);
@@ -120,428 +111,279 @@
       --shadow-soft: 0 12px 40px rgba(15, 23, 42, 0.8);
     }
 
-    .bg-overlay {
+    .bg-overlay{
       position: absolute;
       inset: 0;
       pointer-events: none;
       z-index: -1;
     }
-
     .bg-overlay::before,
-    .bg-overlay::after {
-      content: "";
-      position: absolute;
-      border-radius: 999px;
+    .bg-overlay::after{
+      content:"";
+      position:absolute;
+      border-radius:999px;
       filter: blur(80px);
       opacity: 0.32;
     }
-
-    .bg-overlay::before {
-      width: 320px;
-      height: 320px;
-      background: #38bdf8;
-      top: -80px;
-      right: -40px;
+    .bg-overlay::before{
+      width:320px;height:320px;
+      background:#38bdf8;
+      top:-80px;right:-40px;
     }
-
-    .bg-overlay::after {
-      width: 320px;
-      height: 320px;
-      background: #4ade80;
-      bottom: -90px;
-      left: -40px;
+    .bg-overlay::after{
+      width:320px;height:320px;
+      background:#4ade80;
+      bottom:-90px;left:-40px;
     }
-
     body[data-theme="light"] .bg-overlay::before,
-    body[data-theme="light"] .bg-overlay::after {
-      opacity: 0.14;
+    body[data-theme="light"] .bg-overlay::after{
+      opacity:0.14;
       filter: blur(90px);
     }
+    body[data-theme="his"] .bg-overlay::before{ background:#0ea5e9; }
+    body[data-theme="his"] .bg-overlay::after{ background:#22c55e; }
 
-    body[data-theme="his"] .bg-overlay::before {
-      background: #0ea5e9;
-    }
-    body[data-theme="his"] .bg-overlay::after {
-      background: #22c55e;
-    }
-
-    #appWrapper {
-      width: 100%;
-      max-width: 960px;
-      padding: 22px 26px 26px;
+    #appWrapper{
+      width:100%;
+      max-width:960px;
+      padding:22px 26px 26px;
       border-radius: var(--card-radius);
       background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      border:1px solid var(--card-border);
       box-shadow: var(--shadow-main);
       color: var(--text-main);
-      margin: 0 auto;
+      margin:0 auto;
     }
 
-    @media (max-width: 768px) {
-      #appWrapper {
-        max-width: 480px;
-        padding: 18px 16px 22px;
-      }
+    @media (max-width:768px){
+      #appWrapper{ max-width:480px; padding:18px 16px 22px; }
     }
 
-    /* ===== TOP BAR + LOGO + THEME ===== */
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
+    .top-bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .logo-header{
+      display:flex;align-items:center;gap:12px;
+    }
+    .logo-header img{
+      height:48px;width:auto;object-fit:contain;
+    }
+    .title-block{ flex:1; text-align:center; }
+    .title-block h1{
+      margin:0;font-size:22px;font-weight:600;color:var(--text-strong);
+    }
+    .title-block p{
+      margin:4px 0 0;font-size:12px;color:var(--text-soft);
     }
 
-    .logo-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .theme-switcher{
+      display:inline-flex;
+      padding:3px;
+      border-radius:999px;
+      background:rgba(15,23,42,0.8);
+      border:1px solid rgba(148,163,184,0.5);
+      gap:2px;
     }
-    .logo-header img {
-      height: 48px;   /* ปรับขนาดโลโก้ตรงนี้ได้ */
-      width: auto;
-      object-fit: contain;
+    body[data-theme="light"] .theme-switcher{
+      background:#f1f5f9;border-color:rgba(148,163,184,0.6);
     }
-
-    .title-block {
-      flex: 1;
-      text-align: center;
-    }
-    .title-block h1 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--text-strong);
-    }
-    .title-block p {
-      margin: 4px 0 0;
-      font-size: 12px;
-      color: var(--text-soft);
-    }
-
-    .theme-switcher {
-      display: inline-flex;
-      padding: 3px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      gap: 2px;
-    }
-
-    body[data-theme="light"] .theme-switcher {
-      background: #f1f5f9;
-      border-color: rgba(148, 163, 184, 0.6);
-    }
-
-    .theme-btn {
-      border: none;
-      background: transparent;
-      color: #9ca3af;
-      font-size: 11px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      cursor: pointer;
+    .theme-btn{
+      border:none;background:transparent;color:#9ca3af;
+      font-size:11px;padding:5px 10px;border-radius:999px;
+      cursor:pointer;
       transition: background 0.2s ease, color 0.2s ease, transform 0.06s ease;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
+      display:flex;align-items:center;gap:4px;white-space:nowrap;
     }
-
-    .theme-btn span.dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: #6b7280;
+    .theme-btn span.dot{
+      width:6px;height:6px;border-radius:999px;background:#6b7280;
     }
-
-    .theme-btn.active {
-      background: linear-gradient(135deg, var(--primary1), var(--primary2));
-      color: #f9fafb;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+    .theme-btn.active{
+      background:linear-gradient(135deg,var(--primary1),var(--primary2));
+      color:#f9fafb;
+      box-shadow:0 4px 14px rgba(37,99,235,0.5);
       transform: translateY(-1px);
     }
+    .theme-btn.active span.dot{ background:#f9fafb; }
 
-    .theme-btn.active span.dot {
-      background: #f9fafb;
-    }
-
-    .card {
+    .card{
       background: var(--card-bg);
-      border-radius: 18px;
-      border: 1px solid var(--card-border);
-      padding: 16px 18px 14px;
+      border-radius:18px;
+      border:1px solid var(--card-border);
+      padding:16px 18px 14px;
       box-shadow: var(--shadow-soft);
-      margin-top: 14px;
+      margin-top:14px;
     }
-
-    .card h3 {
-      margin: 0 0 10px;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-strong);
+    .card h3{
+      margin:0 0 10px;
+      font-size:16px;font-weight:600;color:var(--text-strong);
     }
-
-    .divider {
-      border: none;
-      border-top: 1px solid rgba(148, 163, 184, 0.35);
-      margin: 10px 0;
+    .divider{
+      border:none;border-top:1px solid rgba(148,163,184,0.35);
+      margin:10px 0;
     }
-
-    .field-label {
-      display: block;
-      font-size: 13px;
-      color: var(--text-soft);
-      margin-top: 6px;
-      margin-bottom: 4px;
+    .field-label{
+      display:block;font-size:13px;color:var(--text-soft);
+      margin-top:6px;margin-bottom:4px;
     }
+    .field-group{ margin-bottom:8px; }
 
-    .field-group {
-      margin-bottom: 8px;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      padding: 9px 11px;
-      border-radius: 10px;
-      border: 1px solid var(--input-border);
+    input, select, textarea{
+      width:100%;
+      padding:9px 11px;
+      border-radius:10px;
+      border:1px solid var(--input-border);
       background: var(--input-bg);
       color: var(--text-main);
-      font-size: 14px;
-      outline: none;
+      font-size:14px;
+      outline:none;
       transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: var(--input-placeholder);
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
+    input::placeholder, textarea::placeholder{ color: var(--input-placeholder); }
+    input:focus, select:focus, textarea:focus{
       border-color: var(--primary1);
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.5);
     }
+    textarea{ resize:vertical; min-height:60px; }
 
-    textarea {
-      resize: vertical;
-      min-height: 60px;
+    .button-row, .nav-row{
+      margin-top:8px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
     }
-
-    .button-row,
-    .nav-row {
-      margin-top: 8px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    .btn{
+      padding:8px 16px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:500;
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.06s ease,
+                  color 0.18s ease, border-color 0.18s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
     }
+    .btn.small{ padding:6px 12px; font-size:12px; }
 
-    .btn {
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      transition:
-        background 0.18s ease,
-        box-shadow 0.18s ease,
-        transform 0.06s ease,
-        color 0.18s ease,
-        border-color 0.18s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+    .btn.primary{
+      background: linear-gradient(135deg,var(--primary1),var(--primary2));
+      color:#fff;
+      box-shadow:0 6px 20px rgba(37,99,235,0.6);
     }
-
-    .btn.small {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-
-    .btn.primary {
-      background: linear-gradient(135deg, var(--primary1), var(--primary2));
-      color: #ffffff;
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
-    }
-
-    .btn.primary:hover {
+    .btn.primary:hover{
       transform: translateY(-1px);
-      box-shadow: 0 8px 26px rgba(37, 99, 235, 0.8);
+      box-shadow:0 8px 26px rgba(37,99,235,0.8);
     }
-
-    .btn.ghost {
-      background: transparent;
+    .btn.ghost{
+      background:transparent;
       color: var(--btn-text-main);
-      border: 1px solid var(--btn-border-soft);
+      border:1px solid var(--btn-border-soft);
     }
-
-    .btn.ghost:hover {
-      background: rgba(148, 163, 184, 0.16);
-    }
-
-    .btn.danger {
-      background: transparent;
+    .btn.ghost:hover{ background: rgba(148,163,184,0.16); }
+    .btn.danger{
+      background:transparent;
       color: var(--danger-text);
-      border: 1px solid var(--danger-border);
+      border:1px solid var(--danger-border);
+    }
+    .btn.danger:hover{ background: rgba(248,113,113,0.16); }
+
+    .fs-btn{ margin-top:6px; }
+    .msg{
+      min-height:18px;
+      font-size:13px;
+      margin:6px 0 2px 0;
+      color:#fca5a5;
     }
 
-    .btn.danger:hover {
-      background: rgba(248, 113, 113, 0.16);
+    .patient-info{
+      background: rgba(15,23,42,0.75);
+      border-radius:12px;
+      padding:10px;
+      margin-top:6px;
+      border:1px solid rgba(148,163,184,0.4);
     }
+    body[data-theme="light"] .patient-info{ background:#f9fafb; }
+    body[data-theme="his"] .patient-info{ background:#020617; }
 
-    .fs-btn {
-      margin-top: 6px;
-    }
-
-    .msg {
-      min-height: 18px;
-      font-size: 13px;
-      margin: 6px 0 2px 0;
-      color: #fca5a5;
-    }
-
-    .patient-info {
-      background: rgba(15, 23, 42, 0.75);
-      border-radius: 12px;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-    }
-    body[data-theme="light"] .patient-info {
-      background: #f9fafb;
-    }
-    body[data-theme="his"] .patient-info {
-      background: #020617;
-    }
-
-    .value-sm {
-      font-size: 14px;
-      font-weight: 500;
+    .value-sm{
+      font-size:14px;
+      font-weight:500;
       color: var(--text-main);
     }
-
-    .pill-dev {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(59, 130, 246, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.6);
-      color: #bfdbfe;
+    .pill-dev{
+      font-size:12px;
+      font-weight:600;
+      padding:2px 8px;
+      border-radius:999px;
+      background: rgba(59,130,246,0.2);
+      border:1px solid rgba(59,130,246,0.6);
+      color:#bfdbfe;
     }
 
-    .new-patient h4 {
-      margin: 10px 0 6px 0;
-      font-size: 14px;
-      font-weight: 600;
+    .new-patient h4{
+      margin:10px 0 6px 0;
+      font-size:14px;
+      font-weight:600;
       color: var(--text-strong);
     }
 
-    .item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-top: 6px;
+    .item-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      margin-top:6px;
+    }
+    .label{ font-size:13px; color: var(--text-soft); }
+    .value{ font-size:18px; font-weight:600; color: var(--text-main); }
+    .value.time{ font-size:14px; font-weight:500; color:#d1d5db; }
+    .value-pill{
+      font-size:13px;
+      font-weight:600;
+      color:#ecfeff;
+      background: linear-gradient(135deg,var(--accent-green1),var(--accent-green2));
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(22,163,74,0.7);
     }
 
-    .label {
-      font-size: 13px;
+    .card.history{ margin-top:16px; }
+    .history-header h3{ margin-bottom:4px; }
+    .history-sub{ margin:0; font-size:12px; color: var(--text-soft); }
+
+    .history-table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      font-size:12px;
+    }
+    .history-table th, .history-table td{
+      border-bottom:1px solid rgba(148,163,184,0.2);
+      padding:6px 4px;
+      text-align:left;
+    }
+    .history-table th{
+      font-size:12px;
       color: var(--text-soft);
+      font-weight:500;
     }
+    .history-table td{ color: var(--text-main); }
+    .history-table tr:hover td{ background: rgba(148,163,184,0.12); }
+    .history-table .empty{ text-align:center; color: var(--text-soft); }
 
-    .value {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text-main);
+    .layout-grid{
+      display:grid;
+      grid-template-columns:1.1fr 0.9fr;
+      gap:14px;
+      margin-top:14px;
     }
-
-    .value.time {
-      font-size: 14px;
-      font-weight: 500;
-      color: #d1d5db;
-    }
-
-    .value-pill {
-      font-size: 13px;
-      font-weight: 600;
-      color: #ecfeff;
-      background: linear-gradient(135deg, var(--accent-green1), var(--accent-green2));
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(22, 163, 74, 0.7);
-    }
-
-    .card.history {
-      margin-top: 16px;
-    }
-
-    .history-header h3 {
-      margin-bottom: 4px;
-    }
-
-    .history-sub {
-      margin: 0;
-      font-size: 12px;
-      color: var(--text-soft);
-    }
-
-    .history-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 12px;
-    }
-
-    .history-table th,
-    .history-table td {
-      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-      padding: 6px 4px;
-      text-align: left;
-    }
-
-    .history-table th {
-      font-size: 12px;
-      color: var(--text-soft);
-      font-weight: 500;
-    }
-
-    .history-table td {
-      color: var(--text-main);
-    }
-
-    .history-table tr:hover td {
-      background: rgba(148, 163, 184, 0.12);
-    }
-
-    .history-table .empty {
-      text-align: center;
-      color: var(--text-soft);
-    }
-
-    /* grid ผู้ป่วย / monitor */
-    .layout-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 14px;
-      margin-top: 14px;
-    }
-    @media (max-width: 768px) {
-      .layout-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .card {
-        padding: 14px 14px 12px;
-      }
-    }
+    @media (max-width:768px){ .layout-grid{ grid-template-columns:1fr; } }
+    @media (max-width:480px){ .card{ padding:14px 14px 12px; } }
   </style>
 </head>
 
@@ -549,7 +391,6 @@
 <div class="bg-overlay"></div>
 
 <div id="appWrapper">
-  <!-- แถวโลโก้ + ชื่อระบบ + ปุ่มธีม -->
   <div class="top-bar">
     <div class="logo-header">
       <img src="logo-kmutnb.png" class="logo-kmutnb" alt="KMUTNB">
@@ -562,19 +403,13 @@
     </div>
 
     <div class="theme-switcher">
-      <button class="theme-btn active" data-theme-target="dark">
-        <span class="dot"></span> Dark
-      </button>
-      <button class="theme-btn" data-theme-target="light">
-        <span class="dot"></span> Light
-      </button>
-      <button class="theme-btn" data-theme-target="his">
-        <span class="dot"></span> HIS
-      </button>
+      <button class="theme-btn active" data-theme-target="dark"><span class="dot"></span> Dark</button>
+      <button class="theme-btn" data-theme-target="light"><span class="dot"></span> Light</button>
+      <button class="theme-btn" data-theme-target="his"><span class="dot"></span> HIS</button>
     </div>
   </div>
 
-  <!-- ========== LOGIN ========== -->
+  <!-- LOGIN -->
   <div id="loginBox" class="card">
     <h3>เข้าสู่ระบบ</h3>
 
@@ -589,14 +424,12 @@
       <button id="goRegisterBtn" class="btn ghost small">สมัครสมาชิก</button>
     </div>
 
-    <button id="fullscreenBtn" class="btn ghost small fs-btn">
-      เต็มหน้าจอ
-    </button>
+    <button id="fullscreenBtn" class="btn ghost small fs-btn">เต็มหน้าจอ</button>
 
     <p id="loginMsg" class="msg"></p>
   </div>
 
-  <!-- ========== REGISTER ========== -->
+  <!-- REGISTER -->
   <div id="registerBox" class="card" style="display:none;">
     <h3>สมัครสมาชิก</h3>
 
@@ -614,7 +447,7 @@
     <p id="registerMsg" class="msg"></p>
   </div>
 
-  <!-- ========== MAIN PAGE ========== -->
+  <!-- MAIN -->
   <div id="mainPage" style="display:none;">
     <div class="card" id="userBox">
       <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -644,9 +477,7 @@
 
         <hr class="divider">
 
-        <button id="toggleNewPatientBtn" class="btn ghost small">
-          + สร้างข้อมูลผู้ป่วยใหม่
-        </button>
+        <button id="toggleNewPatientBtn" class="btn ghost small">+ สร้างข้อมูลผู้ป่วยใหม่</button>
 
         <div id="newPatientForm" class="new-patient" style="display:none;">
           <h4>เพิ่มผู้ป่วยใหม่</h4>
@@ -668,16 +499,15 @@
         </div>
 
         <div class="button-row" style="margin-top:8px;">
-          <button id="deletePatientBtn" class="btn danger small" style="display:none;">
-            ลบผู้ป่วยนี้ (พร้อมประวัติ)
-          </button>
+          <button id="deletePatientBtn" class="btn danger small" style="display:none;">ลบผู้ป่วยนี้ (พร้อมประวัติ)</button>
         </div>
         <p id="deleteMsg" class="msg"></p>
       </div>
 
-      <!-- Monitor -->
+      <!-- Monitor (ไม่ realtime: แสดง "ผลล่าสุดจากประวัติ") -->
       <div id="monitorBox" class="card monitor" style="display:none;">
-        <h3>สถานะเครื่อง CPM</h3>
+        <h3>สรุปผลล่าสุด (จากประวัติ)</h3>
+
         <div id="statusBox">
           <div class="item-row">
             <span class="label">สถานะ</span>
@@ -698,19 +528,18 @@
         </div>
 
         <div id="mainNavRow" class="nav-row" style="display:none;margin-top:12px;">
-          <button id="toHistoryBtn" class="btn ghost small" style="margin-left:auto;">
-            หน้าถัดไป (ประวัติผู้ป่วย)
-          </button>
+          <button id="refreshHistoryBtn" class="btn ghost small">รีเฟรชประวัติ</button>
+          <button id="toHistoryBtn" class="btn ghost small" style="margin-left:auto;">หน้าถัดไป (ประวัติผู้ป่วย)</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ========== HISTORY ========== -->
+  <!-- HISTORY -->
   <div id="historyPage" class="card history" style="display:none;">
     <div class="history-header">
       <h3>ประวัติการทำ CPM</h3>
-      <p class="history-sub">แสดงประวัติของผู้ป่วยที่เลือก (จาก Firebase)</p>
+      <p class="history-sub">แสดงประวัติของผู้ป่วยที่เลือก (จาก Firebase: /cpm_results)</p>
     </div>
 
     <table class="history-table">
@@ -736,8 +565,11 @@
 </div>
 
 <script>
+  // =========================
+  // CONFIG
+  // =========================
   const FIREBASE_URL  = "https://ankle-cpm-default-rtdb.asia-southeast1.firebasedatabase.app";
-  const FIREBASE_AUTH = null;
+  const FIREBASE_AUTH = null; // ถ้ามี token ให้ใส่ string, ถ้าไม่มีปล่อย null
 
   function buildUrl(path) {
     let url = FIREBASE_URL + path;
@@ -748,7 +580,9 @@
     return url;
   }
 
-  // ===== DOM refs (เหมือนเดิมของคุณ) =====
+  // =========================
+  // DOM refs
+  // =========================
   const loginBox    = document.getElementById("loginBox");
   const registerBox = document.getElementById("registerBox");
   const mainPage    = document.getElementById("mainPage");
@@ -800,15 +634,15 @@
   const toHistoryBtn              = document.getElementById("toHistoryBtn");
   const backToMainBtn             = document.getElementById("backToMainBtn");
   const backToLoginFromHistoryBtn = document.getElementById("backToLoginFromHistoryBtn");
+  const refreshHistoryBtn         = document.getElementById("refreshHistoryBtn");
 
   let currentUserId    = null;
   let patientMap       = {};
   let currentPatientId = null;
 
-  // ===== realtime monitor state =====
-  let telePollTimer = null;
-  let currentDeviceWatching = null;
-
+  // =========================
+  // helpers
+  // =========================
   function formatMMSS(sec) {
     sec = Math.max(0, sec | 0);
     const m  = Math.floor(sec / 60);
@@ -817,6 +651,7 @@
     const ss = (s < 10 ? "0" : "") + s;
     return `${mm}:${ss}`;
   }
+
   function formatTimeFromSeconds(tsSec) {
     if (!tsSec) return "-";
     const d = new Date(tsSec * 1000);
@@ -834,83 +669,7 @@
     historyBody.innerHTML = `<tr><td colspan="5" class="empty">ยังไม่มีข้อมูล</td></tr>`;
   }
 
-  function stopTelemetryWatch(){
-    if (telePollTimer) clearInterval(telePollTimer);
-    telePollTimer = null;
-    currentDeviceWatching = null;
-  }
-
-  async function setDeviceOwner(deviceId){
-    if (!deviceId || !currentUserId) return;
-    try{
-      const url = buildUrl(`/devices/${encodeURIComponent(deviceId)}.json`);
-      await fetch(url, {
-        method:"PATCH",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ ownerId: currentUserId, deviceId })
-      });
-    }catch(e){
-      console.warn("setDeviceOwner failed:", e);
-    }
-  }
-
-  function watchTelemetry(deviceId){
-    stopTelemetryWatch();
-    if (!deviceId) return;
-
-    currentDeviceWatching = deviceId;
-
-    const poll = async ()=>{
-      try{
-        const url = buildUrl(`/devices/${encodeURIComponent(deviceId)}/telemetry.json`);
-        const res = await fetch(url);
-        if(!res.ok) return;
-        const t = await res.json();
-        if(!t) return;
-
-        // ค่าที่ ESP32 ส่ง
-        const st = String(t.state ?? "-");
-        const a1 = (t.angle1 != null) ? Number(t.angle1) : null;
-        const a2 = (t.angle2 != null) ? Number(t.angle2) : null;
-        const cur = (t.curAngle != null) ? Number(t.curAngle) : null;
-        const rem = (t.remainSec != null) ? Number(t.remainSec) : null;
-        const lastSeen = (t.lastSeen != null) ? Number(t.lastSeen) : null;
-
-        // แสดงผล
-        stateEl.textContent = st;
-
-        // มุม: แสดงช่วง + current (ถ้ามี)
-        if (a1 != null && a2 != null && cur != null){
-          angleEl.textContent = `${a1}° - ${a2}° (C:${cur}°)`;
-        }else if (a1 != null && a2 != null){
-          angleEl.textContent = `${a1}° - ${a2}°`;
-        }else if (cur != null){
-          angleEl.textContent = `${cur}°`;
-        }else{
-          angleEl.textContent = "-";
-        }
-
-        // เวลา: remainSec
-        if (rem != null){
-          remEl.textContent = `${rem} วินาที (${formatMMSS(rem)})`;
-        }else{
-          remEl.textContent = "-";
-        }
-
-        // time: lastSeen
-        timeEl.textContent = lastSeen ? formatTimeFromSeconds(lastSeen) : "-";
-      }catch(err){
-        console.warn("telemetry poll error:", err);
-      }
-    };
-
-    poll();
-    telePollTimer = setInterval(poll, 700);
-  }
-
   function showLoginUI(){
-    stopTelemetryWatch();
-
     loginBox.style.display    = "block";
     registerBox.style.display = "none";
     mainPage.style.display    = "none";
@@ -919,7 +678,7 @@
 
     currentUserId = null;
     currentUserLabel.textContent = "-";
-    patientMap       = {};
+    patientMap = {};
     currentPatientId = null;
     patientSelect.innerHTML = `<option value="">— เลือกผู้ป่วย —</option>`;
     patientInfo.style.display = "none";
@@ -929,6 +688,7 @@
     loginMsg.textContent    = "";
     registerMsg.textContent = "";
   }
+
   function showRegisterUI(){
     loginBox.style.display    = "none";
     registerBox.style.display = "block";
@@ -936,6 +696,7 @@
     historyPage.style.display = "none";
     registerMsg.textContent   = "";
   }
+
   function showMainUI(){
     loginBox.style.display    = "none";
     registerBox.style.display = "none";
@@ -956,6 +717,9 @@
     }
   });
 
+  // =========================
+  // Auth (เหมือนเดิม)
+  // =========================
   async function registerUser(username,password){
     const u = username.trim();
     const p = password.trim();
@@ -1043,31 +807,16 @@
     showLoginUI();
   }
 
-  loginBtn.addEventListener("click",e=>{
-    e.preventDefault();
-    loginUser(usernameInput.value,passwordInput.value);
-  });
-  goRegisterBtn.addEventListener("click",e=>{
-    e.preventDefault();
-    showRegisterUI();
-  });
-  registerSubmitBtn.addEventListener("click",e=>{
-    e.preventDefault();
-    registerUser(regUsernameInput.value,regPasswordInput.value);
-  });
-  backToLoginBtn.addEventListener("click",e=>{
-    e.preventDefault();
-    showLoginUI();
-  });
-  logoutBtn.addEventListener("click",e=>{
-    e.preventDefault();
-    logout();
-  });
+  loginBtn.addEventListener("click",e=>{ e.preventDefault(); loginUser(usernameInput.value,passwordInput.value); });
+  goRegisterBtn.addEventListener("click",e=>{ e.preventDefault(); showRegisterUI(); });
+  registerSubmitBtn.addEventListener("click",e=>{ e.preventDefault(); registerUser(regUsernameInput.value,regPasswordInput.value); });
+  backToLoginBtn.addEventListener("click",e=>{ e.preventDefault(); showLoginUI(); });
+  logoutBtn.addEventListener("click",e=>{ e.preventDefault(); logout(); });
 
-  // ======= CHANGED: load patients from /users/{owner}/patients =======
+  // =========================
+  // Patients (กลับไปใช้ /patients แบบง่าย)
+  // =========================
   async function loadPatientsForCurrentUser(){
-    stopTelemetryWatch();
-
     patientMap={};
     patientSelect.innerHTML=`<option value="">— เลือกผู้ป่วย —</option>`;
     patientInfo.style.display="none";
@@ -1077,7 +826,7 @@
     if(!currentUserId) return;
 
     try{
-      const url = buildUrl(`/users/${encodeURIComponent(currentUserId)}/patients.json`);
+      const url = buildUrl("/patients.json");
       const res = await fetch(url);
       const data = await res.json();
       if(!data) return;
@@ -1085,6 +834,7 @@
       Object.keys(data).forEach(pid=>{
         const p=data[pid];
         if(!p) return;
+        if(p.ownerId!==currentUserId) return; // แยกข้อมูลคนละ user
         patientMap[pid]=p;
 
         const opt=document.createElement("option");
@@ -1099,11 +849,9 @@
   }
 
   toggleNewPatientBtn.addEventListener("click",()=>{
-    newPatientForm.style.display =
-      (newPatientForm.style.display==="block")?"none":"block";
+    newPatientForm.style.display = (newPatientForm.style.display==="block") ? "none" : "block";
   });
 
-  // ======= CHANGED: save patient to /users/{owner}/patients/{id} =======
   savePatientBtn.addEventListener("click",async()=>{
     patientMsgEl.textContent="";
     deleteMsgEl.textContent="";
@@ -1112,6 +860,7 @@
       patientMsgEl.style.color="red";
       return;
     }
+
     const name=newNameInput.value.trim();
     const id=newHNInput.value.trim();
     const deviceId=newDeviceInput.value.trim();
@@ -1137,16 +886,13 @@
     };
 
     try{
-      const url=buildUrl(`/users/${encodeURIComponent(currentUserId)}/patients/${encodeURIComponent(id)}.json`);
+      const url=buildUrl("/patients/"+encodeURIComponent(id)+".json");
       const res=await fetch(url,{
         method:"PUT",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(payload)
       });
       if(!res.ok) throw new Error("HTTP "+res.status);
-
-      // ผูก device owner ให้ ESP32 ดึง owner ได้
-      await setDeviceOwner(deviceId);
 
       patientMsgEl.textContent="บันทึกข้อมูลผู้ป่วยเรียบร้อย";
       patientMsgEl.style.color="lightgreen";
@@ -1166,7 +912,6 @@
     }
   });
 
-  // ======= CHANGED: delete patient & history from /users/{owner}/... =======
   deletePatientBtn.addEventListener("click",async()=>{
     deleteMsgEl.textContent="";
     if(!currentUserId){
@@ -1183,12 +928,21 @@
 
     try{
       // delete patient
-      const urlP = buildUrl(`/users/${encodeURIComponent(currentUserId)}/patients/${encodeURIComponent(currentPatientId)}.json`);
-      await fetch(urlP,{method:"DELETE"});
+      await fetch(buildUrl("/patients/"+encodeURIComponent(currentPatientId)+".json"), {method:"DELETE"});
 
-      // delete history subtree for that patient
-      const urlH = buildUrl(`/users/${encodeURIComponent(currentUserId)}/cpm_results/${encodeURIComponent(currentPatientId)}.json`);
-      await fetch(urlH,{method:"DELETE"});
+      // delete all history rows matching this patientId in /cpm_results
+      const resH = await fetch(buildUrl("/cpm_results.json"));
+      const histData = await resH.json();
+      if(histData){
+        const tasks=[];
+        for(const key in histData){
+          const item=histData[key];
+          if(item && String(item.patientId)===String(currentPatientId)){
+            tasks.push(fetch(buildUrl("/cpm_results/"+encodeURIComponent(key)+".json"), {method:"DELETE"}));
+          }
+        }
+        await Promise.all(tasks);
+      }
 
       deleteMsgEl.textContent="ลบผู้ป่วยและประวัติเรียบร้อย";
       deleteMsgEl.style.color="lightgreen";
@@ -1206,14 +960,10 @@
     }
   });
 
-  patientSelect.addEventListener("change",()=>{
-    onPatientSelected(patientSelect.value);
-  });
+  patientSelect.addEventListener("change",()=>{ onPatientSelected(patientSelect.value); });
 
   function onPatientSelected(id){
     deleteMsgEl.textContent="";
-    stopTelemetryWatch();
-
     if(!id || !patientMap[id]){
       currentPatientId=null;
       patientInfo.style.display="none";
@@ -1225,7 +975,6 @@
 
     currentPatientId=id;
     const p=patientMap[id];
-
     pNameEl.textContent=(p.name||"")+(p.lastname?(" "+p.lastname):"");
     pHNEl.textContent=p.patientId||id;
     pDeviceEl.textContent=p.deviceId||"-";
@@ -1233,24 +982,20 @@
     patientInfo.style.display="block";
     deletePatientBtn.style.display="inline-flex";
 
-    // ผูก device owner เพื่อให้ ESP32 ใช้ ownerId นี้
-    setDeviceOwner(p.deviceId || "");
-
-    // Monitor realtime จาก telemetry
-    watchTelemetry(p.deviceId || "");
-
-    // โหลดประวัติ
+    // โหลด history (และอัปเดต monitor จากรายการล่าสุด)
     loadHistoryForPatient(currentPatientId);
   }
 
-  // ======= CHANGED: load history from /users/{owner}/cpm_results/{patientId} =======
+  // =========================
+  // History: อ่านจาก /cpm_results แล้วกรองด้วย patientId
+  // =========================
   async function loadHistoryForPatient(patientId) {
     clearHistoryTable();
-    // ไม่ clear monitor แล้ว เพราะ monitor มาจาก telemetry
-    if (!patientId || !currentUserId) return;
+    clearMonitor();
+    if (!patientId) return;
 
     try {
-      const url = buildUrl(`/users/${encodeURIComponent(currentUserId)}/cpm_results/${encodeURIComponent(patientId)}.json`);
+      const url = buildUrl("/cpm_results.json");
       const res = await fetch(url);
       const data = await res.json();
       if (!data) {
@@ -1258,36 +1003,45 @@
         return;
       }
 
-      // data เป็น object pushKey -> record
-      const rows = Object.keys(data).map(k => data[k]).filter(Boolean);
+      const pidStr = String(patientId);
+      const rows = [];
+
+      for (const key in data) {
+        const item = data[key];
+        if (!item) continue;
+
+        const recPid = (item.patientId !== undefined && item.patientId !== null)
+          ? String(item.patientId)
+          : "";
+
+        if (recPid !== pidStr) continue;
+
+        // เก็บ key ไว้ด้วย (เผื่ออนาคตจะใช้)
+        rows.push({ _key: key, ...item });
+      }
+
       if (rows.length === 0) {
         clearHistoryTable();
         return;
       }
 
-      // เรียงจากใหม่ไปเก่า: ใช้ endTsUnix เป็นหลัก (ใน ESP โค้ดใหม่ด้านล่าง)
-      rows.sort((a, b) => (b.endTsUnix || b.ts || 0) - (a.endTsUnix || a.ts || 0));
+      rows.sort((a, b) => (b.ts || 0) - (a.ts || 0));
 
       historyBody.innerHTML = "";
 
       rows.forEach((r) => {
         const tr = document.createElement("tr");
 
-        const ts = r.endTsUnix || r.ts || 0;
-        const tsDisp = ts ? formatTimeFromSeconds(ts) : "-";
-
+        const tsDisp = r.ts ? formatTimeFromSeconds(r.ts) : "-";
         const angleDisp =
           (r.angle1 != null && r.angle2 != null)
             ? `${r.angle1}° - ${r.angle2}°`
             : "-";
-
-        const tsec = (r.workTimeSec != null) ? Number(r.workTimeSec) : null;
         const timeDisp =
-          (tsec != null)
-            ? `${tsec} วินาที (${formatMMSS(tsec)})`
+          (r.workTimeSec != null)
+            ? `${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})`
             : "-";
-
-        const devDisp = r.deviceId || r.device || "ESP32-CPM";
+        const devDisp = r.device || r.deviceId || "ESP32-CPM";
         const noteDisp = r.note || "";
 
         tr.innerHTML = `
@@ -1299,11 +1053,28 @@
         `;
         historyBody.appendChild(tr);
       });
+
+      // อัปเดต Monitor จากรายการล่าสุด
+      const latest = rows[0];
+      stateEl.textContent = "FINISHED";
+      angleEl.textContent =
+        (latest.angle1 != null && latest.angle2 != null)
+          ? `${latest.angle1}° - ${latest.angle2}°`
+          : "-";
+      remEl.textContent =
+        (latest.workTimeSec != null)
+          ? `${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})`
+          : "-";
+      timeEl.textContent = latest.ts ? formatTimeFromSeconds(latest.ts) : "-";
+
     } catch (err) {
       console.error("loadHistoryForPatient error:", err);
     }
   }
 
+  // =========================
+  // Navigation
+  // =========================
   toHistoryBtn.addEventListener("click",()=>{
     historyPage.style.display="block";
     mainPage.style.display="none";
@@ -1316,12 +1087,16 @@
     showLoginUI();
   });
 
+  refreshHistoryBtn.addEventListener("click", ()=>{
+    if(currentPatientId) loadHistoryForPatient(currentPatientId);
+  });
+
   document.addEventListener("DOMContentLoaded",showLoginUI);
 
+  // theme switch
   (function () {
-    const body   = document.body;
-    const btns   = document.querySelectorAll(".theme-btn");
-
+    const body = document.body;
+    const btns = document.querySelectorAll(".theme-btn");
     btns.forEach((btn)=>{
       btn.addEventListener("click",()=>{
         const theme = btn.getAttribute("data-theme-target");
@@ -1334,5 +1109,3 @@
 </script>
 </body>
 </html>
-
-
