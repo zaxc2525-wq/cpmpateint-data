@@ -539,7 +539,7 @@
   <div id="historyPage" class="card history" style="display:none;">
     <div class="history-header">
       <h3>ประวัติการทำ CPM</h3>
-      <p class="history-sub">แสดงประวัติของผู้ป่วยที่เลือก (จาก Firebase: /cpm_results)</p>
+      <p class="history-sub">แสดงประวัติของผู้ป่วยที่เลือก (จาก Firebase: /cpm_results/{patientId})</p>
     </div>
 
     <table class="history-table">
@@ -928,20 +928,26 @@
     if(!ok) return;
 
     try{
-      // delete patient
+      // delete patient profile
       await fetch(buildUrl("/patients/"+encodeURIComponent(currentPatientId)+".json"), {method:"DELETE"});
 
-      // delete only this user's history for that patientId (สำคัญ: กันลบของคนอื่น)
-      const resH = await fetch(buildUrl("/cpm_results.json"));
+      // delete history under /cpm_results/{patientId} (ลบเฉพาะรายการที่ ownerId ตรง)
+      const resH = await fetch(buildUrl("/cpm_results/" + encodeURIComponent(currentPatientId) + ".json"));
       const histData = await resH.json();
-      if(histData){
+
+      if(histData && typeof histData === "object"){
         const tasks=[];
-        for(const key in histData){
-          const item=histData[key];
+        for(const pushKey in histData){
+          const item = histData[pushKey];
           if(!item) continue;
-          if(String(item.patientId||"") !== String(currentPatientId)) continue;
           if(String(item.ownerId||"") !== String(currentUserId)) continue;
-          tasks.push(fetch(buildUrl("/cpm_results/"+encodeURIComponent(key)+".json"), {method:"DELETE"}));
+
+          tasks.push(
+            fetch(
+              buildUrl("/cpm_results/" + encodeURIComponent(currentPatientId) + "/" + encodeURIComponent(pushKey) + ".json"),
+              {method:"DELETE"}
+            )
+          );
         }
         await Promise.all(tasks);
       }
@@ -988,7 +994,8 @@
   }
 
   // =========================
-  // History: อ่าน /cpm_results แล้วกรองด้วย patientId + ownerId (สำคัญ)
+  // History: โครงสร้างจริงของคุณ
+  // /cpm_results/{patientId}/{pushKey} = { angle1, angle2, deviceId, endTsUnix, endTsMs, endLocal, workTimeSec, workTimeMMSS, ownerId, patientId }
   // =========================
   async function loadHistoryForPatient(patientId) {
     clearHistoryTable();
@@ -996,29 +1003,38 @@
     if (!patientId || !currentUserId) return;
 
     try {
-      const url = buildUrl("/cpm_results.json");
+      // อ่านเฉพาะ patientId ที่เลือก (สำคัญ)
+      const url = buildUrl("/cpm_results/" + encodeURIComponent(patientId) + ".json");
       const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
-      if (!data) {
+
+      if (!data || typeof data !== "object") {
         clearHistoryTable();
         return;
       }
 
-      const pidStr = String(patientId);
       const ownerStr = String(currentUserId);
-
       const rows = [];
-      for (const key in data) {
-        const item = data[key];
+
+      for (const pushKey in data) {
+        const item = data[pushKey];
         if (!item) continue;
 
-        const recPid = (item.patientId != null) ? String(item.patientId) : "";
+        // กันประวัติข้ามบัญชี
         const recOwner = (item.ownerId != null) ? String(item.ownerId) : "";
+        if (recOwner !== ownerStr) continue;
 
-        if (recPid !== pidStr) continue;
-        if (recOwner !== ownerStr) continue; // กันประวัติข้ามบัญชี
+        // เวลา: ใช้ endTsUnix (sec) ก่อน, fallback เป็น endTsMs (ms)
+        let tsSec = 0;
+        if (item.endTsUnix != null) tsSec = Number(item.endTsUnix) || 0;
+        else if (item.endTsMs != null) tsSec = Math.floor((Number(item.endTsMs) || 0) / 1000);
 
-        rows.push({ _key: key, ...item });
+        rows.push({
+          _key: pushKey,
+          ...item,
+          _ts: tsSec
+        });
       }
 
       if (rows.length === 0) {
@@ -1026,18 +1042,27 @@
         return;
       }
 
-      rows.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      // เรียงล่าสุดก่อน
+      rows.sort((a, b) => (b._ts || 0) - (a._ts || 0));
 
       historyBody.innerHTML = "";
 
       rows.forEach((r) => {
         const tr = document.createElement("tr");
-        const tsDisp = r.ts ? formatTimeFromSeconds(r.ts) : "-";
+
+        const tsDisp = (r._ts)
+          ? formatTimeFromSeconds(r._ts)
+          : (r.endLocal || "-");
+
         const angleDisp =
           (r.angle1 != null && r.angle2 != null) ? `${r.angle1}° - ${r.angle2}°` : "-";
+
         const timeDisp =
-          (r.workTimeSec != null) ? `${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})` : "-";
-        const devDisp = r.device || r.deviceId || "ESP32-CPM";
+          (r.workTimeSec != null)
+            ? `${r.workTimeSec} วินาที (${formatMMSS(r.workTimeSec)})`
+            : (r.workTimeMMSS ? `${r.workTimeMMSS} (mm:ss)` : "-");
+
+        const devDisp = r.deviceId || "ESP32-CPM";
         const noteDisp = r.note || "";
 
         tr.innerHTML = `
@@ -1050,17 +1075,24 @@
         historyBody.appendChild(tr);
       });
 
-      // Monitor from latest (ที่ผ่าน filter แล้ว)
+      // Monitor from latest
       const latest = rows[0];
       stateEl.textContent = "FINISHED";
+
       angleEl.textContent =
         (latest.angle1 != null && latest.angle2 != null) ? `${latest.angle1}° - ${latest.angle2}°` : "-";
+
       remEl.textContent =
-        (latest.workTimeSec != null) ? `${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})` : "-";
-      timeEl.textContent = latest.ts ? formatTimeFromSeconds(latest.ts) : "-";
+        (latest.workTimeSec != null)
+          ? `${latest.workTimeSec} วินาที (${formatMMSS(latest.workTimeSec)})`
+          : (latest.workTimeMMSS ? latest.workTimeMMSS : "-");
+
+      timeEl.textContent =
+        (latest._ts) ? formatTimeFromSeconds(latest._ts) : (latest.endLocal || "-");
 
     } catch (err) {
       console.error("loadHistoryForPatient error:", err);
+      clearHistoryTable();
     }
   }
 
