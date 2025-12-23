@@ -504,7 +504,7 @@
         <p id="deleteMsg" class="msg"></p>
       </div>
 
-      <!-- Monitor (ไม่ realtime: แสดง "ผลล่าสุดจากประวัติ") -->
+      <!-- Monitor -->
       <div id="monitorBox" class="card monitor" style="display:none;">
         <h3>สรุปผลล่าสุด (จากประวัติ)</h3>
 
@@ -542,6 +542,14 @@
       <p class="history-sub">แสดงประวัติของผู้ป่วยที่เลือก (จาก Firebase: /cpm_results/{patientId})</p>
     </div>
 
+    <!-- ✅ Export buttons (เพิ่มใหม่) -->
+    <div class="nav-row" style="margin-top:10px;">
+      <button id="exportCsvBtn" class="btn primary small">Export CSV</button>
+      <button id="copyCsvBtn" class="btn ghost small">Copy CSV</button>
+      <button id="exportJsonBtn" class="btn ghost small">Export JSON</button>
+      <span id="exportMsg" class="msg" style="margin-left:auto;min-height:0;"></span>
+    </div>
+
     <table class="history-table">
       <thead>
         <tr>
@@ -569,7 +577,7 @@
   // CONFIG
   // =========================
   const FIREBASE_URL  = "https://ankle-cpm-default-rtdb.asia-southeast1.firebasedatabase.app";
-  const FIREBASE_AUTH = null; // ถ้ามี token ให้ใส่ string, ถ้าไม่มีปล่อย null
+  const FIREBASE_AUTH = null;
 
   function buildUrl(path) {
     let url = FIREBASE_URL + path;
@@ -636,9 +644,18 @@
   const backToLoginFromHistoryBtn = document.getElementById("backToLoginFromHistoryBtn");
   const refreshHistoryBtn         = document.getElementById("refreshHistoryBtn");
 
+  // ✅ Export refs
+  const exportCsvBtn  = document.getElementById("exportCsvBtn");
+  const exportJsonBtn = document.getElementById("exportJsonBtn");
+  const copyCsvBtn    = document.getElementById("copyCsvBtn");
+  const exportMsg     = document.getElementById("exportMsg");
+
   let currentUserId    = null;
   let patientMap       = {};
   let currentPatientId = null;
+
+  // ✅ เก็บข้อมูล history ล่าสุดเพื่อ export
+  let lastHistoryRows = [];
 
   // =========================
   // helpers
@@ -659,14 +676,21 @@
     return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()+543} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
 
+  function safeFilePart(s){
+    return String(s || "").replace(/[^\w\-]+/g, "_").slice(0, 60);
+  }
+
   function clearMonitor(){
     stateEl.textContent="-";
     angleEl.textContent="-";
     remEl.textContent="-";
     timeEl.textContent="-";
   }
+
   function clearHistoryTable(){
     historyBody.innerHTML = `<tr><td colspan="5" class="empty">ยังไม่มีข้อมูล</td></tr>`;
+    lastHistoryRows = [];
+    exportMsg.textContent = "";
   }
 
   function showLoginUI(){
@@ -928,10 +952,7 @@
     if(!ok) return;
 
     try{
-      // delete patient profile
       await fetch(buildUrl("/patients/"+encodeURIComponent(currentPatientId)+".json"), {method:"DELETE"});
-
-      // ✅ ลบประวัติทั้งหมดของ patientId นี้ (ตรงโครงสร้างจริงใน Firebase)
       await fetch(buildUrl("/cpm_results/" + encodeURIComponent(currentPatientId) + ".json"), {method:"DELETE"});
 
       deleteMsgEl.textContent="ลบผู้ป่วยและประวัติเรียบร้อย";
@@ -976,7 +997,119 @@
   }
 
   // =========================
-  // History: อ่าน /cpm_results/{patientId} แล้วแสดง "ทั้งหมด" (ไม่กรอง ownerId)
+  // Export helpers (เพิ่มใหม่)
+  // =========================
+  function downloadTextFile(filename, text, mime="text/plain;charset=utf-8"){
+    const blob = new Blob([text], {type: mime});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function csvEscape(v){
+    const s = (v == null) ? "" : String(v);
+    // escape double quotes
+    const esc = s.replace(/"/g, '""');
+    // wrap if needed
+    if (/[",\n]/.test(esc)) return `"${esc}"`;
+    return esc;
+  }
+
+  function buildCsvFromRows(rows){
+    const header = [
+      "patientId","deviceId",
+      "endLocal","endTsUnix","endTsMs",
+      "angle1","angle2",
+      "workTimeSec","workTimeMMSS",
+      "ownerId"
+    ];
+
+    const lines = [];
+    lines.push(header.join(","));
+
+    rows.forEach(r=>{
+      const row = [
+        r.patientId, r.deviceId,
+        r.endLocal, r.endTsUnix, r.endTsMs,
+        r.angle1, r.angle2,
+        r.workTimeSec, r.workTimeMMSS,
+        r.ownerId
+      ].map(csvEscape);
+      lines.push(row.join(","));
+    });
+
+    return lines.join("\n");
+  }
+
+  async function copyToClipboard(text){
+    // ใช้ Clipboard API ถ้าได้
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    // fallback: textarea
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position="fixed";
+    ta.style.left="-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  }
+
+  function setExportMsg(text, color="lightgreen"){
+    exportMsg.textContent = text || "";
+    exportMsg.style.color = color;
+    if (text){
+      setTimeout(()=>{ exportMsg.textContent=""; }, 2500);
+    }
+  }
+
+  exportCsvBtn.addEventListener("click", ()=>{
+    if(!currentPatientId || !lastHistoryRows.length){
+      setExportMsg("ไม่มีข้อมูลให้ Export", "yellow");
+      return;
+    }
+    const filename = `CPM_${safeFilePart(currentPatientId)}_history.csv`;
+    const csv = buildCsvFromRows(lastHistoryRows);
+    downloadTextFile(filename, csv, "text/csv;charset=utf-8");
+    setExportMsg("ดาวน์โหลด CSV แล้ว");
+  });
+
+  exportJsonBtn.addEventListener("click", ()=>{
+    if(!currentPatientId || !lastHistoryRows.length){
+      setExportMsg("ไม่มีข้อมูลให้ Export", "yellow");
+      return;
+    }
+    const filename = `CPM_${safeFilePart(currentPatientId)}_history.json`;
+    const json = JSON.stringify(lastHistoryRows, null, 2);
+    downloadTextFile(filename, json, "application/json;charset=utf-8");
+    setExportMsg("ดาวน์โหลด JSON แล้ว");
+  });
+
+  copyCsvBtn.addEventListener("click", async ()=>{
+    if(!currentPatientId || !lastHistoryRows.length){
+      setExportMsg("ไม่มีข้อมูลให้ Copy", "yellow");
+      return;
+    }
+    try{
+      const csv = buildCsvFromRows(lastHistoryRows);
+      const ok = await copyToClipboard(csv);
+      setExportMsg(ok ? "คัดลอก CSV แล้ว" : "คัดลอกไม่สำเร็จ", ok ? "lightgreen" : "red");
+    }catch(e){
+      setExportMsg("คัดลอกไม่สำเร็จ", "red");
+    }
+  });
+
+  // =========================
+  // History: อ่าน /cpm_results/{patientId}
   // =========================
   async function loadHistoryForPatient(patientId) {
     clearHistoryTable();
@@ -1012,6 +1145,21 @@
       }
 
       rows.sort((a, b) => (b._ts || 0) - (a._ts || 0));
+
+      // ✅ เก็บไว้ export (ตัด field ภายในบางตัวได้ตามต้องการ)
+      lastHistoryRows = rows.map(r => ({
+        patientId: r.patientId ?? String(patientId),
+        deviceId: r.deviceId ?? "",
+        endLocal: r.endLocal ?? "",
+        endTsUnix: r.endTsUnix ?? (r._ts || 0),
+        endTsMs: r.endTsMs ?? ((r._ts||0) ? (r._ts*1000) : 0),
+        angle1: r.angle1 ?? "",
+        angle2: r.angle2 ?? "",
+        workTimeSec: r.workTimeSec ?? "",
+        workTimeMMSS: r.workTimeMMSS ?? "",
+        ownerId: r.ownerId ?? ""
+      }));
+
       historyBody.innerHTML = "";
 
       rows.forEach((r) => {
